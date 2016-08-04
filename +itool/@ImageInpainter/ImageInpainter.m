@@ -1,6 +1,6 @@
-classdef ImageInpainter
+classdef ImageInpainter         
     %IMAGEINPAINTER 修补图像的类
-    %   此处显示详细说明
+    %   实现了2004年A.Criminisi的算法，论文原文为“Region Filling and Object Removal by Exemplar-Based Image Inpaiting”
     
     properties
         row_num; % 图像的行数
