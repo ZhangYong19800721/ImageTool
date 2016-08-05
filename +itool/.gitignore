@@ -1,0 +1,5 @@
+# make git to ingore the following files
+
+*.mp4
+*.ts
+*.yuv
