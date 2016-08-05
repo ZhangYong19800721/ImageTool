@@ -1,14 +1,12 @@
 clear all;
 close all;
-warning off;
 
-fid = fopen('logo_clip.yuv','r');
-mov = itool.read_yuv(fid,1080,1920,'yuv420p',9);
-itool.play_movie(mov);
+movie = load('E:\WorkSpace\itool\+itool\@VideoInpainter\unit_test\movie.mat');
+mask = load('E:\WorkSpace\itool\+itool\@VideoInpainter\unit_test\mask.mat');
 
-mask = load('E:\WorkSpace\removelogo\+itool\@VideoInpainter\mask.mat');
-vi = itool.VideoInpainter(mask.image);
+movie = movie.mov(:,:,:,1:100);
+mask = mask.image(1:237,(1920-576+1):1920);
+itool.play_movie(movie);
 
-vi = vi.inpaint(mov);
-
-fclose(fid);
+vi = itool.VideoInpainter(4,4,2);
+vi = vi.inpaint(movie,mask);
