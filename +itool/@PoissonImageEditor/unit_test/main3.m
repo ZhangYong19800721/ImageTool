@@ -10,16 +10,28 @@ mask = mask.image(1:237,(1920-576+1):1920);
 
 movie_image = double(movie(:,:,:,1));
 
-laplace = [0 -1 0; -1 4 -1; 0 -1 0];  
-laplace_image = imfilter(movie_image, laplace, 'replicate');  
+%laplace = [0 -1 0; -1 4 -1; 0 -1 0];  
+%laplace_image = imfilter(movie_image, laplace, 'replicate');  
 
 Y = movie_image(:,:,1);
 U = movie_image(:,:,2);
 V = movie_image(:,:,3);
 
-laplace_Y = laplace_image(:,:,1);
-laplace_U = laplace_image(:,:,2);
-laplace_V = laplace_image(:,:,3);
+[GYx,GYy] = gradient(Y);
+[GUx,GUy] = gradient(U);
+[GVx,GVy] = gradient(V);
+
+divY = divergence(GYx,GYy);
+divU = divergence(GUx,GUy);
+divV = divergence(GVx,GVy);
+
+%laplace_Y = laplace_image(:,:,1);
+%laplace_U = laplace_image(:,:,2);
+%laplace_V = laplace_image(:,:,3);
+
+laplace_Y = -1 * divY;
+laplace_U = -1 * divU;
+laplace_V = -1 * divV;
 
 pie = itool.PoissonImageEditor();
 adjacent = pie.compute_adjacent(mask);

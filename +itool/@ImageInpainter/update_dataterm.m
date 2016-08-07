@@ -1,4 +1,4 @@
-function D = update_dataterm(obj,image,mask)
+function D = update_dataterm(obj,image,mask) % for image
 %UPDATE_DATATERM 计算数据项
 %   
     [ix(:,:,3), iy(:,:,3)] = gradient(double(image(:,:,3))); % 分别对RGB三个分量求梯度

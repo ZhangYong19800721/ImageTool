@@ -9,14 +9,6 @@ function [cube,range_x,range_y,range_t] = get_cube(obj,matrix,x,y,t)
     range_y = ran_y;
     range_t = ran_t;
     
-    ndim = length(size(matrix));
-    if ndim == 3
-        cube = matrix(ran_x,ran_y,ran_t);
-    elseif ndim == 4
-        cube = matrix(ran_x,ran_y,:,ran_t);
-    else
-        error('Wrong matrix dimension!');
-        exit(0);
-    end
+    cube = matrix(ran_x,ran_y,ran_t);
 end
 

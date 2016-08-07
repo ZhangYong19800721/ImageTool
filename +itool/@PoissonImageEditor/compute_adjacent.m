@@ -1,7 +1,7 @@
-function neighbors = calcAdjancency( Mask )  
+function neighbors = compute_adjacent(obj, mask)  
   
-    [height, width]      = size(Mask);  
-    [row_mask, col_mask] = find(Mask);
+    [height, width]      = size(mask);  
+    [row_mask, col_mask] = find(mask);
     
     neighbors = sparse(length(row_mask), length(row_mask), 0);
     

@@ -6,6 +6,8 @@ classdef PoissonImageEditor
     end
     
     methods
+        result_image = poisson_solver(obj, image, mask, adjacent)
+        neighbors = compute_adjacent(obj, mask)  
     end
     
 end
