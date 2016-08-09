@@ -15,18 +15,18 @@ function mov = inpaint(obj,movie,mask)
         P = obj.compute_priority(C,D,obj.front_idx);
         [~,best_idx] = max(P);
         posx = obj.front_x(best_idx); posy = obj.front_y(best_idx); post = obj.front_t(best_idx);
-        [cube_Y_Gx,~,range_x,range_y,range_t] = obj.get_cube(obj.movie_Y_Gx,posx,posy,post);
-        [cube_Y_Gy,~,~,~,~]                   = obj.get_cube(obj.movie_Y_Gy,posx,posy,post);
-        [cube_U_Gx,~,~,~,~]                   = obj.get_cube(obj.movie_U_Gx,posx,posy,post);
-        [cube_U_Gy,~,~,~,~]                   = obj.get_cube(obj.movie_U_Gy,posx,posy,post);
-        [cube_V_Gx,~,~,~,~]                   = obj.get_cube(obj.movie_V_Gx,posx,posy,post);
-        [cube_V_Gy,~,~,~,~]                   = obj.get_cube(obj.movie_V_Gy,posx,posy,post);
-        cube_mask3d                           = obj.get_cube(obj.mask3d,posx,posy,post);
+        [cube_Y_Gx,range_x,range_y,range_t] = obj.get_cube(obj.movie_Y_Gx,posx,posy,post);
+        [cube_Y_Gy,~,~,~]                   = obj.get_cube(obj.movie_Y_Gy,posx,posy,post);
+        [cube_U_Gx,~,~,~]                   = obj.get_cube(obj.movie_U_Gx,posx,posy,post);
+        [cube_U_Gy,~,~,~]                   = obj.get_cube(obj.movie_U_Gy,posx,posy,post);
+        [cube_V_Gx,~,~,~]                   = obj.get_cube(obj.movie_V_Gx,posx,posy,post);
+        [cube_V_Gy,~,~,~]                   = obj.get_cube(obj.movie_V_Gy,posx,posy,post);
+        cube_mask3d                         = obj.get_cube(obj.mask3d,posx,posy,post);
 
         [bYGx,bYGy,bUGx,bUGy,bVGx,bVGy,bx,by,bt] = obj.find_best_exampler(cube_Y_Gx,cube_Y_Gy,cube_U_Gx,cube_U_Gy,cube_V_Gx,cube_V_Gy,cube_mask3d,post);
         
         h = figure(3);
-        imshow(ycbcr2rgb(movie(:,:,:,post))); axis image; hold on;
+        imshow(ycbcr2rgb(movie(:,:,:,3))); axis image; hold on;
         plot([min(range_y) max(range_y)],[min(range_x) min(range_x)],'-r');
         plot([min(range_y) max(range_y)],[max(range_x) max(range_x)],'-r');
         plot([min(range_y) min(range_y)],[min(range_x) max(range_x)],'-r');
@@ -38,6 +38,7 @@ function mov = inpaint(obj,movie,mask)
         plot([by+obj.delta_y by+obj.delta_y],[bx-obj.delta_x bx+obj.delta_x],'-g');
         drawnow
         savefig(h,strcat('my',strcat(num2str(n),'.fig')));
+        
         
         obj.movie_Y_Gx(range_x,range_y,range_t) = cube_Y_Gx .* double(~cube_mask3d) + bYGx .* double(cube_mask3d); 
         obj.movie_Y_Gy(range_x,range_y,range_t) = cube_Y_Gy .* double(~cube_mask3d) + bYGy .* double(cube_mask3d); 

@@ -5,3 +5,5 @@
 *.yuv
 *.mat
 *.nb
+*.fig
+

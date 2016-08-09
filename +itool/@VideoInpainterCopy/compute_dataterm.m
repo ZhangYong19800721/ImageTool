@@ -1,8 +1,8 @@
-function D = update_dataterm(obj,dataterm,ran_t) % for video
-%UPDATE_DATATERM 计算等辐照线方向和边界法向的内积
-%
-    D = dataterm;
-    for frame = ran_t
+function D = compute_dataterm(obj)
+%COMPUTE_DATATERM 计算数据项
+%   
+    D = zeros(size(obj.mask3d));
+    for frame = 1:obj.frame_num
         ix1 = obj.movie_Y_Gx(:,:,frame); %取Y分量x方向的梯度
         iy1 = obj.movie_Y_Gy(:,:,frame); %取Y分量y方向的梯度
         

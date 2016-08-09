@@ -12,7 +12,7 @@ function obj = initialize(obj,movie,mask)
     obj.movie_V_Gx = zeros(obj.row_num, obj.col_num, obj.frame_num);
     obj.movie_V_Gy = zeros(obj.row_num, obj.col_num, obj.frame_num);
     
-    for frame = (1+obj.delta_t):(obj.frame_num-obj.delta_t)
+    for frame = 1:obj.frame_num
         [obj.movie_Y_Gx(:,:,frame),obj.movie_Y_Gy(:,:,frame)] = gradient(double(movie(:,:,1,frame)));
         [obj.movie_U_Gx(:,:,frame),obj.movie_U_Gy(:,:,frame)] = gradient(double(movie(:,:,2,frame)));
         [obj.movie_V_Gx(:,:,frame),obj.movie_V_Gy(:,:,frame)] = gradient(double(movie(:,:,3,frame)));
