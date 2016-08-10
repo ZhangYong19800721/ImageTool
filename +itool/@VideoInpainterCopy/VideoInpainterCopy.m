@@ -4,10 +4,10 @@ classdef VideoInpainterCopy
     
     properties
         mask3d; % 蒙板,是一个二值图像，需要修补的区域标记为1，其它区域标记为0。
-        movie_Y; % Y分量
-        movie_U; % U分量
-        movie_V; % V分量
-        
+        movie;  % 需要被修复的数据
+        movie_DIV_Y; % Y分量的散度
+        movie_DIV_U; % U分量的散度
+        movie_DIV_V; % V分量的散度
         delta_x; % 修补单元的高度为2*delta_x+1
         delta_y; % 修补单元的高度为2*delta_y+1
         delta_t; % 修补单元的高度为2*delta_t+1
@@ -22,7 +22,7 @@ classdef VideoInpainterCopy
     end
     
     methods
-        function obj = VideoInpainter(dx,dy,dt) % VideoInpainter构造函数
+        function obj = VideoInpainterCopy(dx,dy,dt) % VideoInpainter构造函数
             obj.delta_x = dx;
             obj.delta_y = dy;
             obj.delta_t = dt;
@@ -37,7 +37,7 @@ classdef VideoInpainterCopy
         D = update_dataterm(obj,dataterm,ran_t) %更新数据项
         D = compute_dataterm(obj) %计算数据项
         P = compute_priority(obj,confidence,dataterm,front_idx); %计算所有边界点的优先级
-        [cube,range_x,range_y,range_t] = get_cube(obj,matrix,x,y,z) % 从3维（或4维）矩阵中取一个立方块的数据
+        [cube,valid,r_x,r_y,r_t] = get_cube(obj,matrix,x,y,z) % 从3维（或4维）矩阵中取一个立方块的数据
         [YGx,YGy,UGx,UGy,VGx,VGy,sub_x,sub_y,sub_t] = find_best_exampler(obj,c_Y_Gx,c_Y_Gy,c_U_Gx,c_U_Gy,c_V_Gx,c_V_Gy,c_mask3d,t); 
         C = update_confidence(obj,confidence,ran_x,ran_y,ran_t)
     end

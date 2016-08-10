@@ -21,8 +21,8 @@ function image = inpaint(obj,origin_image,mask)
         [patch,ran_x,ran_y] = obj.get_patch(image,posx,posy);
         patch_mask = obj.get_patch(obj.current_mask,posx,posy);
         [best_exampler,~,~] = obj.find_best_exampler(patch,patch_mask,image);
-        image(ran_x,ran_y,:) = patch .* repmat(uint8(~patch_mask),1,1,3) + best_exampler .* repmat(uint8(patch_mask),1,1,3); % 填充图像
-        figure(1); imshow(image);
+        image(ran_x,ran_y,:) = patch .* repmat(double(~patch_mask),1,1,3) + best_exampler .* repmat(double(patch_mask),1,1,3); % 填充图像
+        figure(1); imshow(uint8(image));
         C = obj.update_confidence(C,ran_x,ran_y); % 更新被填充区域的自信度
         obj.current_mask(ran_x,ran_y) = 0; % 更新current_mask蒙板
         bound_mat = conv2(double(obj.current_mask),bound_finder,'same'); % 重新确定边界

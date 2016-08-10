@@ -6,8 +6,8 @@ function C = update_confidence(obj,confidence,ran_x,ran_y,ran_t)
     for x = ran_x
         for y = ran_y
             for t = ran_t
-                cube_c = obj.get_cube(confidence,x,y,t);
-                C(x,y,t) = sum(sum(sum(cube_c)))/div;
+                [cube_c,valid] = obj.get_cube(confidence,x,y,t);
+                C(x,y,t) = sum(sum(sum(cube_c.*valid)))/div;
             end
         end
     end

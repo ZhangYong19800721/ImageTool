@@ -25,19 +25,19 @@ function mov = inpaint(obj,movie,mask)
 
         [bYGx,bYGy,bUGx,bUGy,bVGx,bVGy,bx,by,bt] = obj.find_best_exampler(cube_Y_Gx,cube_Y_Gy,cube_U_Gx,cube_U_Gy,cube_V_Gx,cube_V_Gy,cube_mask3d,post);
         
-        h = figure(3);
-        imshow(ycbcr2rgb(movie(:,:,:,post))); axis image; hold on;
-        plot([min(range_y) max(range_y)],[min(range_x) min(range_x)],'-r');
-        plot([min(range_y) max(range_y)],[max(range_x) max(range_x)],'-r');
-        plot([min(range_y) min(range_y)],[min(range_x) max(range_x)],'-r');
-        plot([max(range_y) max(range_y)],[min(range_x) max(range_x)],'-r');
-        
-        plot([by-obj.delta_y by+obj.delta_y],[bx-obj.delta_x bx-obj.delta_x],'-g');
-        plot([by-obj.delta_y by+obj.delta_y],[bx+obj.delta_x bx+obj.delta_x],'-g');
-        plot([by-obj.delta_y by-obj.delta_y],[bx-obj.delta_x bx+obj.delta_x],'-g');
-        plot([by+obj.delta_y by+obj.delta_y],[bx-obj.delta_x bx+obj.delta_x],'-g');
-        drawnow
-        savefig(h,strcat('my',strcat(num2str(n),'.fig')));
+%         h = figure(3);
+%         imshow(ycbcr2rgb(movie(:,:,:,post))); axis image; hold on;
+%         plot([min(range_y) max(range_y)],[min(range_x) min(range_x)],'-r');
+%         plot([min(range_y) max(range_y)],[max(range_x) max(range_x)],'-r');
+%         plot([min(range_y) min(range_y)],[min(range_x) max(range_x)],'-r');
+%         plot([max(range_y) max(range_y)],[min(range_x) max(range_x)],'-r');
+%         
+%         plot([by-obj.delta_y by+obj.delta_y],[bx-obj.delta_x bx-obj.delta_x],'-g');
+%         plot([by-obj.delta_y by+obj.delta_y],[bx+obj.delta_x bx+obj.delta_x],'-g');
+%         plot([by-obj.delta_y by-obj.delta_y],[bx-obj.delta_x bx+obj.delta_x],'-g');
+%         plot([by+obj.delta_y by+obj.delta_y],[bx-obj.delta_x bx+obj.delta_x],'-g');
+%         drawnow
+%         savefig(h,strcat('my',strcat(num2str(n),'.fig')));
         
         obj.movie_Y_Gx(range_x,range_y,range_t) = cube_Y_Gx .* double(~cube_mask3d) + bYGx .* double(cube_mask3d); 
         obj.movie_Y_Gy(range_x,range_y,range_t) = cube_Y_Gy .* double(~cube_mask3d) + bYGy .* double(cube_mask3d); 
@@ -50,7 +50,7 @@ function mov = inpaint(obj,movie,mask)
         obj.mask3d(range_x,range_y,range_t) = 0; % 更新三维mask蒙板
         D = obj.update_dataterm(D,range_t); % 更新数据项
         
-        figure(2); 
+        figure(1); 
         imshow(sum(logical(C),3)/obj.frame_num);
         drawnow
         

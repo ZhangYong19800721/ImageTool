@@ -7,8 +7,8 @@ function C = compute_confidence(obj,confidence)
         x = obj.front_x(n); % 取得边界点坐标x
         y = obj.front_y(n); % 取得边界点坐标y
         t = obj.front_t(n); % 取得边界点坐标t
-        cube = obj.get_cube(confidence,x,y,t);
-        C(x,y,t) = sum(sum(sum(cube))) / div;
+        [cube,valid] = obj.get_cube(confidence,x,y,t);
+        C(x,y,t) = sum(sum(sum(cube.*valid))) / div;
     end
 end
 

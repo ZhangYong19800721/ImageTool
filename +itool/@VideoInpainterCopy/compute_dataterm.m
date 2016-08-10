@@ -3,7 +3,7 @@ function D = compute_dataterm(obj)
 %   
     D = zeros(size(obj.mask3d));
     for frame = 1:obj.frame_num
-        ix1 = obj.movie_Y_Gx(:,:,frame); %取Y分量x方向的梯度
+        [ix1,iy1] = gradient(); obj.movie_Y_Gx(:,:,frame); %取Y分量x方向的梯度
         iy1 = obj.movie_Y_Gy(:,:,frame); %取Y分量y方向的梯度
         
         ix2 = obj.movie_U_Gx(:,:,frame); %取U分量x方向的梯度
