@@ -32,7 +32,7 @@ function obj = estimate_homography_matrix( obj, image1, image2 )
         point_index = randperm(number_of_matchpoints,4); % 随机选择4对匹配点
         selected_points1 = match_points1(:,point_index);
         selected_points2 = match_points2(:,point_index);
-        Current_H = DLT(selected_points1,selected_points2);
+        Current_H = obj.DLT(selected_points1,selected_points2);
         
         % 计算inliers的个数
         x = Current_H * match_points2;
@@ -54,6 +54,6 @@ function obj = estimate_homography_matrix( obj, image1, image2 )
     inlier_index = (epsi < delta);
     selected_points1 = match_points1(:,inlier_index);
     selected_points2 = match_points2(:,inlier_index);
-    obj.H = DLT(selected_points1,selected_points2);
+    obj.H = obj.DLT(selected_points1,selected_points2);
 end
 
