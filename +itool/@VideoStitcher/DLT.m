@@ -1,4 +1,4 @@
-function H = DLT(obj, match_points1, match_points2)
+function H = DLT(match_points1, match_points2)
 %EstimateHomography 根据两组匹配点计算两幅图之间的投影变换矩阵，至少需要4对匹配点
 %  match_points1: 第1组点，一列是一个点的位置，match_points1中的第i列与match_points2中的第i列是对应点
 %  match_points2：第2组点，一列是一个点的位置，match_points1中的第i列与match_points2中的第i列是对应点
