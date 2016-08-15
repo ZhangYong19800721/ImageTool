@@ -6,24 +6,31 @@ function obj = estimate(obj, yuvs)
     
     yuvs(1).fid = fopen(yuvs(1).filename,'r');
     yuvs(2).fid = fopen(yuvs(2).filename,'r');
+    yuvs(3).fid = fopen(yuvs(3).filename,'r');
     
     image1 = itool.read_frame(yuvs(1)); images(1).Y = image1(:,:,1);
     image2 = itool.read_frame(yuvs(2)); images(2).Y = image2(:,:,1);
+    image3 = itool.read_frame(yuvs(3)); images(3).Y = image3(:,:,1);
     
-    H = obj.estimate_homography(images(1).Y,images(2).Y);
-    obj.H(:,:,1) = eye(3);
-    obj.H(:,:,2) = H;
+    H12 = obj.estimate_homography(images(2).Y,images(1).Y);
+    H32 = obj.estimate_homography(images(2).Y,images(3).Y);
+    obj.H(:,:,1) = H12;
+    obj.H(:,:,2) = eye(3);
+    obj.H(:,:,3) = H32;
     
     image1_size = size(images(1).Y);
     image2_size = size(images(2).Y);
+    image3_size = size(images(3).Y);
     
     image1_corner = [1 1 1;1 image1_size(2) 1;image1_size(1) 1 1;image1_size(1) image1_size(2) 1]';
     image2_corner = [1 1 1;1 image2_size(2) 1;image2_size(1) 1 1;image2_size(1) image2_size(2) 1]';
+    image3_corner = [1 1 1;1 image3_size(2) 1;image3_size(1) 1 1;image3_size(1) image3_size(2) 1]';
     
     image1_c_corner = obj.H(:,:,1) * image1_corner; image1_c_corner = image1_c_corner ./ repmat(image1_c_corner(3,:),3,1);
     image2_c_corner = obj.H(:,:,2) * image2_corner; image2_c_corner = image2_c_corner ./ repmat(image2_c_corner(3,:),3,1);
+    image3_c_corner = obj.H(:,:,3) * image3_corner; image3_c_corner = image3_c_corner ./ repmat(image3_c_corner(3,:),3,1);
     
-    canvas_corner = cat(2,image1_c_corner,image2_c_corner);
+    canvas_corner = cat(2,image1_c_corner,image2_c_corner,image3_c_corner);
     row_min = floor(min(canvas_corner(1,:)));
     row_max =  ceil(max(canvas_corner(1,:)));
     col_min = floor(min(canvas_corner(2,:)));
@@ -35,9 +42,11 @@ function obj = estimate(obj, yuvs)
     M = [1 0 (-row_min+1);0 1 (-col_min+1);0 0 1];
     obj.H(:,:,1) = M * obj.H(:,:,1); % 得到第1路视频的投影变换矩阵
     obj.H(:,:,2) = M * obj.H(:,:,2); % 得到第2路视频的投影变换矩阵
+    obj.H(:,:,3) = M * obj.H(:,:,3); % 得到第3路视频的投影变换矩阵
     
     fclose(yuvs(1).fid);
     fclose(yuvs(2).fid);
+    fclose(yuvs(3).fid);
     
     % 计算每一路视频的蒙板和插值查询点
     [y_g_c,x_g_c] = meshgrid(1:obj.canvas_col_num,1:obj.canvas_row_num); 

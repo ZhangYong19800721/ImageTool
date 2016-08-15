@@ -5,8 +5,10 @@ function yuv = stitch(obj, yuvs, count)
 
     N = length(yuvs); % 共有N路视频
 
-    yuvs(1).fid = fopen(yuvs(1).filename,'r');
-    yuvs(2).fid = fopen(yuvs(2).filename,'r');
+    for n = 1:N
+        yuvs(n).fid = fopen(yuvs(n).filename,'r');
+    end
+    
     yuv  = itool.YUV();
     yuv.filename = 'result.yuv';
     yuv.row_num = obj.canvas_row_num;
@@ -32,13 +34,17 @@ function yuv = stitch(obj, yuvs, count)
         end
        
         warning off;
-        imshow(ycbcr2rgb(uint8(cat(3,Y,U,V))));
-        fwrite(yuv.fid,uint8(Y'));
-        fwrite(yuv.fid,uint8(U'));
-        fwrite(yuv.fid,uint8(V'));
+        YR = imresize(Y,[1080 1920]);
+        UR = imresize(U,[1080 1920]);
+        VR = imresize(V,[1080 1920]);
+        imshow(ycbcr2rgb(uint8(cat(3,YR,UR,VR))));
+        fwrite(yuv.fid,uint8(YR'));
+        fwrite(yuv.fid,uint8(UR'));
+        fwrite(yuv.fid,uint8(VR'));
     end
     
-    fclose(yuvs(1).fid);
-    fclose(yuvs(2).fid);
+    for n = 1:N
+        fclose(yuvs(n).fid);
+    end
     fclose(yuv.fid);
 end
