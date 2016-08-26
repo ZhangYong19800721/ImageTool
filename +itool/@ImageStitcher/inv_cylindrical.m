@@ -1,10 +1,11 @@
-function pos_e = inv_cylindrical(pos_c,f)
+function XYZ_euclid = inv_cylindrical(XYZ_cylind)
 %INV_CYLINDRICAL 将圆柱坐标系坐标转换为直角坐标系坐标
-%   pos_c: 直角坐标系坐标
-%   f：焦距
-    pos_e = zeros(size(pos_c));
-    pos_e(1,:) = f * tan(pos_c(1,:)./pos_c(3,:));
-    pos_e(2,:) = f * (pos_c(2,:) ./ pos_c(3,:)) * sec(pos_c(1,:) ./ pos_c(3,:));
-    pos_e(3,:) = f;
+%   XYZ_cylind: 圆柱坐标系的坐标值
+%   XYZ_euclid：欧氏坐标系的坐标值
+    XYZ_euclid = zeros(size(XYZ_cylind));
+    theda = XYZ_cylind(2,:) ./ XYZ_cylind(3,:);
+    XYZ_euclid(2,:) = XYZ_cylind(3,:) .* sin(theda);
+    XYZ_euclid(1,:) = XYZ_cylind(1,:);
+    XYZ_euclid(3,:) = XYZ_cylind(3,:) .* cos(theda);
 end
 
