@@ -15,15 +15,15 @@ function obj = estimate(obj, images)
     number_of_images = length(images); % 需要拼接的图片个数
     for n = 1:number_of_images
         if n == 1
-            f = 2.5 * radius_cylind;
+            f = 2.5;
             obj.cameras(n).K = diag([1 1 f]);
             obj.cameras(n).R = expm(zeros(3,3));
         end
     end
     
     for n = 1:number_of_images
-        % XYZ_Q_euclid = obj.cameras(n).R' * (obj.cameras(n).K \ XYZ_euclid); % 开始计算插值查询点坐标
-        XYZ_Q_euclid = obj.cameras(n).K(3,3) * XYZ_euclid ./ abs(repmat(XYZ_euclid(3,:),3,1)); 
+        XYZ_Q_euclid = obj.cameras(n).R' * (obj.cameras(n).K \ XYZ_euclid); % 开始计算插值查询点坐标
+        XYZ_Q_euclid = XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1)); 
         XYZ_Q_euclid = obj.cameras(n).R' * (obj.cameras(n).K \ XYZ_Q_euclid);
         X_Q_euclid = XYZ_Q_euclid(1,:); Y_Q_euclid = XYZ_Q_euclid(2,:); Z_Q_euclid = XYZ_Q_euclid(3,:); 
         [image_row_num,image_col_num,~] = size(images(n).image); % 获取图像的大小
