@@ -23,8 +23,7 @@ function obj = estimate(obj, images)
     
     for n = 1:number_of_images
         XYZ_Q_euclid = obj.cameras(n).R' * (obj.cameras(n).K \ XYZ_euclid); % 开始计算插值查询点坐标
-        XYZ_Q_euclid = XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1)); 
-        XYZ_Q_euclid = obj.cameras(n).R' * (obj.cameras(n).K \ XYZ_Q_euclid);
+        XYZ_Q_euclid = radius_cylind * XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1));
         X_Q_euclid = XYZ_Q_euclid(1,:); Y_Q_euclid = XYZ_Q_euclid(2,:); Z_Q_euclid = XYZ_Q_euclid(3,:); 
         [image_row_num,image_col_num,~] = size(images(n).image); % 获取图像的大小
         image_midx = (image_row_num-1)/2 + 1; image_midy = (image_col_num-1)/2 + 1; % 计算图像的中值点
