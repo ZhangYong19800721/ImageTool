@@ -29,34 +29,33 @@ function obj = estimate(obj, images)
             image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
             image2 = rgb2gray(images(2).image); f2 = obj.cameras(2).K(1,1) * radius_cylind;
             H = itool.ImageStitcher.estimate_homography2(image1,f1,image2,f2);
-            obj.cameras(n).R = inv(H);
-            %theda1 = 180; theda2 = 0; theda3 = 180;
-            %theda = [0 -theda3 theda2; theda3 0 -theda1; -theda2 theda1 0] * pi / 180;
-            %obj.cameras(n).R = expm(theda) * obj.cameras(n).R;
+            H = H ./ H(3,3);
+            obj.cameras(n).R = inv(H); 
         end
         
-%         if n == 3
-%             obj.cameras(n).K = obj.cameras(1).K;
-%             image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
-%             image3 = rgb2gray(images(3).image); f3 = obj.cameras(3).K(1,1) * radius_cylind;
-%             H = itool.ImageStitcher.estimate_homography2(image1,f1,image3,f3);
-%             obj.cameras(n).R = inv(H);
-%         end
+        if n == 3
+            obj.cameras(n).K = obj.cameras(1).K;
+            image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
+            image3 = rgb2gray(images(3).image); f3 = obj.cameras(3).K(1,1) * radius_cylind;
+            H = itool.ImageStitcher.estimate_homography2(image1,f1,image3,f3);
+            H = H ./ H(3,3);
+            obj.cameras(n).R = inv(H);
+        end
     end
     
     % 根据相机参数K和R，计算每个图片对应的蒙板和插值查询点坐标
     for n = 1:number_of_images
         XYZ_Q_euclid = obj.cameras(n).K * obj.cameras(n).R * XYZ_euclid; % 开始计算插值查询点坐标
-        XYZ_Q_euclid = radius_cylind * XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1));
-        X_Q_euclid = XYZ_Q_euclid(1,:); Y_Q_euclid = XYZ_Q_euclid(2,:); Z_Q_euclid = XYZ_Q_euclid(3,:); 
+        XYZ_I_euclid = radius_cylind * XYZ_Q_euclid ./ repmat(XYZ_Q_euclid(3,:),3,1);
+        X_I_euclid = XYZ_I_euclid(1,:); Y_I_euclid = XYZ_I_euclid(2,:); Z_Q_euclid = XYZ_Q_euclid(3,:); 
         [image_row_num,image_col_num,~] = size(images(n).image); % 获取图像的大小
         image_midx = (image_row_num-1)/2 + 1; image_midy = (image_col_num-1)/2 + 1; % 计算图像的中值点
-        mask = (X_Q_euclid >= (1-image_midx)) & (X_Q_euclid <= (image_row_num-image_midx)) & ...
-               (Y_Q_euclid >= (1-image_midy)) & (Y_Q_euclid <= (image_col_num-image_midy)) & ...
+        mask = (X_I_euclid >= (1-image_midx)) & (X_I_euclid <= (image_row_num-image_midx)) & ...
+               (Y_I_euclid >= (1-image_midy)) & (Y_I_euclid <= (image_col_num-image_midy)) & ...
                (Z_Q_euclid > 0); % 计算得到该图像对应的蒙板
         obj.cameras(n).mask = mask; % 记录第n个图片的蒙板
-        obj.cameras(n).query_x = X_Q_euclid(mask) + image_midx; % 记录第n个图片的插值查询点 
-        obj.cameras(n).query_y = Y_Q_euclid(mask) + image_midy; % 记录第n个图片的插值查询点
+        obj.cameras(n).query_x = X_I_euclid(mask) + image_midx; % 记录第n个图片的插值查询点 
+        obj.cameras(n).query_y = Y_I_euclid(mask) + image_midy; % 记录第n个图片的插值查询点
     end
 end
 
