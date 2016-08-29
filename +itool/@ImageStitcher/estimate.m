@@ -13,16 +13,40 @@ function obj = estimate(obj, images)
     XYZ_euclid = itool.ImageStitcher.inv_cylindrical(XYZ_cylind); % 将圆柱坐标系的坐标值变换为欧氏坐标系的坐标值
     
     number_of_images = length(images); % 需要拼接的图片个数
+    
+    % 估计所有相机的参数K和R
     for n = 1:number_of_images
         if n == 1
             f = 2.5;
-            obj.cameras(n).K = diag([1 1 f]);
-            obj.cameras(n).R = expm(zeros(3,3));
+            obj.cameras(n).K = diag([f f 1]);
+            theda1 = 0; theda2 = 0; theda3 = 0;
+            theda = [0 -theda3 theda2; theda3 0 -theda1; -theda2 theda1 0] * pi / 180;
+            obj.cameras(n).R = expm(theda);
         end
+        
+        if n == 2
+            obj.cameras(n).K = obj.cameras(1).K;
+            image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
+            image2 = rgb2gray(images(2).image); f2 = obj.cameras(2).K(1,1) * radius_cylind;
+            H = itool.ImageStitcher.estimate_homography2(image1,f1,image2,f2);
+            obj.cameras(n).R = inv(H);
+            %theda1 = 180; theda2 = 0; theda3 = 180;
+            %theda = [0 -theda3 theda2; theda3 0 -theda1; -theda2 theda1 0] * pi / 180;
+            %obj.cameras(n).R = expm(theda) * obj.cameras(n).R;
+        end
+        
+%         if n == 3
+%             obj.cameras(n).K = obj.cameras(1).K;
+%             image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
+%             image3 = rgb2gray(images(3).image); f3 = obj.cameras(3).K(1,1) * radius_cylind;
+%             H = itool.ImageStitcher.estimate_homography2(image1,f1,image3,f3);
+%             obj.cameras(n).R = inv(H);
+%         end
     end
     
+    % 根据相机参数K和R，计算每个图片对应的蒙板和插值查询点坐标
     for n = 1:number_of_images
-        XYZ_Q_euclid = obj.cameras(n).R' * (obj.cameras(n).K \ XYZ_euclid); % 开始计算插值查询点坐标
+        XYZ_Q_euclid = obj.cameras(n).K * obj.cameras(n).R * XYZ_euclid; % 开始计算插值查询点坐标
         XYZ_Q_euclid = radius_cylind * XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1));
         X_Q_euclid = XYZ_Q_euclid(1,:); Y_Q_euclid = XYZ_Q_euclid(2,:); Z_Q_euclid = XYZ_Q_euclid(3,:); 
         [image_row_num,image_col_num,~] = size(images(n).image); % 获取图像的大小
