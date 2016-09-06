@@ -11,11 +11,13 @@ classdef ImageStitcher
     methods
         canvas = stitch(obj, images) % 输入N个image，输出拼接结果
         obj = estimate(obj, images) % 输入N个image，估计拼接参数
+        obj = bundle_adjust(obj,images,radius) % 对输入的N个image，作群体微调
     end
     
     methods(Static)
         H = estimate_homography(image1, image2) % 使用SURF特征估计两幅图之间的透视变换矩阵
         H = estimate_homography2(image1, f1, image2, f2) % 使用SURF特征估计两幅图之间的透视变换矩阵
+        inliers = find_inliers(features_point1, features_point2) % 寻找两组特征之间的inliers点
         H = DLT(match_points1, match_points2) % 使用DLT算法估计两组匹配点之间的透视变换矩阵
         pos_c = cylindrical(pos_e,s) % 将直角坐标系坐标转换为圆柱坐标系坐标
         XYZ_euclid = inv_cylindrical(XYZ_cylind) % 将圆柱坐标系坐标转换为直角坐标系坐标 

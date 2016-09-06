@@ -1,9 +1,9 @@
 function obj = estimate(obj, images)
 %estimate 估计拼接参数
 %   images：需要被拼接的图片数组
-    obj.canvas_row_num = 1080; obj.canvas_col_num = 5400;
+    obj.canvas_row_num = 1080; obj.canvas_col_num = 1920; angle = 190 * pi / 180;
     row_num = obj.canvas_row_num; col_num = obj.canvas_col_num; % 计算最终的行数和列数，即最终的图像分辨率 
-    radius_cylind = (col_num+1)/(2*pi); % 计算圆柱的半径
+    radius_cylind = (col_num+1)/angle; % 计算圆柱的半径
     midx = (row_num-1)/2 + 1; midy = (col_num-1)/2 + 1; % 计算X坐标的中值点和Y坐标的中值点
     [Y_cylind,X_cylind] = meshgrid(1:col_num,1:row_num); % 获取坐标网格（圆柱坐标系）
     X_cylind = X_cylind - midx; Y_cylind = Y_cylind - midy; % 将中心位置对准坐标原点（圆柱坐标系）
@@ -14,34 +14,27 @@ function obj = estimate(obj, images)
     
     number_of_images = length(images); % 需要拼接的图片个数
     
+    obj = obj.bundle_adjust(images,radius_cylind);
+    
     % 估计所有相机的参数K和R
-    for n = 1:number_of_images
-        if n == 1
-            f = 2.5;
-            obj.cameras(n).K = diag([f f 1]);
-            theda1 = 0; theda2 = 0; theda3 = 0;
-            theda = [0 -theda3 theda2; theda3 0 -theda1; -theda2 theda1 0] * pi / 180;
-            obj.cameras(n).R = expm(theda);
-        end
-        
-        if n == 2
-            obj.cameras(n).K = obj.cameras(1).K;
-            image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
-            image2 = rgb2gray(images(2).image); f2 = obj.cameras(2).K(1,1) * radius_cylind;
-            H = itool.ImageStitcher.estimate_homography2(image1,f1,image2,f2);
-            H = H ./ H(3,3);
-            obj.cameras(n).R = inv(H); 
-        end
-        
-        if n == 3
-            obj.cameras(n).K = obj.cameras(1).K;
-            image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
-            image3 = rgb2gray(images(3).image); f3 = obj.cameras(3).K(1,1) * radius_cylind;
-            H = itool.ImageStitcher.estimate_homography2(image1,f1,image3,f3);
-            H = H ./ H(3,3);
-            obj.cameras(n).R = inv(H);
-        end
-    end
+%     for n = 1:number_of_images
+%         if n == 1
+%             f = 2.5;
+%             obj.cameras(n).K = diag([f f 1]);
+%             theda1 = 0; theda2 = 0; theda3 = 0;
+%             theda = [0 -theda3 theda2; theda3 0 -theda1; -theda2 theda1 0] * pi / 180;
+%             obj.cameras(n).R = expm(theda);
+%         end
+%         
+%         if n == 2
+%             obj.cameras(n).K = obj.cameras(1).K;
+%             image1 = rgb2gray(images(1).image); f1 = obj.cameras(1).K(1,1) * radius_cylind;
+%             image2 = rgb2gray(images(2).image); f2 = obj.cameras(2).K(1,1) * radius_cylind;
+%             H = itool.ImageStitcher.estimate_homography2(image1,f1,image2,f2);
+%             H = H ./ H(3,3);
+%             obj.cameras(n).R = inv(H); 
+%         end
+%     end
     
     % 根据相机参数K和R，计算每个图片对应的蒙板和插值查询点坐标
     for n = 1:number_of_images
