@@ -3,7 +3,7 @@ function inliers = find_inliers(features_point1, features_point2)
 %   此处显示详细说明
     index_pairs = matchFeatures(features_point1.Descript, features_point2.Descript);
     number_of_matchpoints = length(index_pairs);
-    delta = 3; % 当匹配点之间的距离小于delta时是一个inlier点
+    delta = 5; % 当匹配点之间的距离小于delta时是一个inlier点
      
     X1 = features_point1.Location(1,index_pairs(:,1));
     Y1 = features_point1.Location(2,index_pairs(:,1));
