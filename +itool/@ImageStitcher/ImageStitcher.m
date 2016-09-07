@@ -24,7 +24,7 @@ classdef ImageStitcher
         pos_s = spherical(pos_e,s) % 将直角坐标系坐标转换为球面坐标系坐标
         pos_e = inv_spherical(pos_s) % 将球面坐标系坐标转换为直角坐标系坐标 
         [canvas,mask] = homography(r,R,image) % 将图像使用H矩阵投影变换
-        match_count = neighbour(images) % 计算图像两两之间的匹配点数
+        [inliers_count,inliers] = neighbour(images) % 计算图像两两之间的匹配点数
     end
     
 end

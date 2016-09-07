@@ -1,16 +1,22 @@
-function match_count = neighbour(images)
+function [inliers_count,inliers] = neighbour(images)
 %NEIGHBOUR 计算图像两两之间的匹配点数
 %   此处显示详细说明
     number_of_images = length(images);
-    match_count = zeros(number_of_images);
+    inliers_count = zeros(number_of_images);
     for n = 1:number_of_images
         for m = (n+1):number_of_images
-            index_pairs = matchFeatures(images(n).features_points.Descript, ...
-                                        images(m).features_points.Descript);
-            [mc, ~] = size(index_pairs);
-            match_count(n,m) = mc;
+            inlier_index_pairs = itool.ImageStitcher.find_inliers(images(n).features_points,images(m).features_points);
+            [count, ~] = size(inlier_index_pairs);
+            if count > 500
+                inliers(n,m).inliers = inlier_index_pairs;
+                inliers(m,n).inliers = inlier_index_pairs(:,end:-1:1);
+                inliers_count(n,m) = count;
+            else
+                inliers_count(n,m) = 0;
+            end
         end
     end
-    match_count = triu(match_count,1) + triu(match_count,1)'; 
+    
+    inliers_count = triu(inliers_count,1) + triu(inliers_count,1)';
 end
 
