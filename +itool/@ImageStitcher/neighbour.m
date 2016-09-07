@@ -7,7 +7,7 @@ function [inliers_count,inliers] = neighbour(images)
         for m = (n+1):number_of_images
             inlier_index_pairs = itool.ImageStitcher.find_inliers(images(n).features_points,images(m).features_points);
             [count, ~] = size(inlier_index_pairs);
-            if count > 500
+            if count > 100
                 inliers(n,m).inliers = inlier_index_pairs;
                 inliers(m,n).inliers = inlier_index_pairs(:,end:-1:1);
                 inliers_count(n,m) = count;

@@ -52,7 +52,7 @@ function obj = bundle_adjust(obj,images,radius) %
         
         % 对bundle_group中的图像作群体调整，用levenberg-marquardt算法进行最优化
         options = optimoptions(@lsqnonlin,'Algorithm','levenberg-marquardt', ...
-            'MaxFunEvals',1e5,'TolFun',1e-13,'TolX',1e-13,'MaxIter',1e5,'Display','iter');
+            'MaxFunEvals',1e5,'TolFun',1e-8,'TolX',1e-8,'MaxIter',1e4,'Display','iter');
         x_solution = lsqnonlin(@optim_func,x_start,[],[],options);
         
         % 将解向量变换为H矩阵
