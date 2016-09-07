@@ -1,67 +1,63 @@
 function obj = bundle_adjust(obj,images,radius) % 
 %BUNDLE_ADJUST 对输入的N个image，作群体微调
 %   此处显示详细说明
-
+    number_of_images = length(images);
+    
     % 选定第1个图像为中央对齐图像
-    cameras(1).focal = 2.5;
-    cameras(1).theda = zeros(3,3);
+    obj.cameras(1).H = eye(3); obj.cameras(1).H(3,3) = 1/2.5;
+    bundle_group = 1;
 
-    for n = 1:length(images) % 抽取Surf特征，记录特征点坐标和描述向量
-        cameras(n).gray_image = rgb2gray(images(n).image);
-        surf_points = detectSURFFeatures(cameras(n).gray_image);
-        [features_descript, features_points] = extractFeatures(cameras(n).gray_image, surf_points);
-        [image_row,image_col] = size(cameras(n).gray_image);
+    for n = 1:number_of_images % 抽取Surf特征，记录特征点坐标和描述向量
+        images(n).gray_image = rgb2gray(images(n).image);
+        surf_points = detectSURFFeatures(images(n).gray_image);
+        [features_descript, features_points] = extractFeatures(images(n).gray_image, surf_points);
+        [image_row,image_col] = size(images(n).gray_image);
         image_midx = (image_row - 1) / 2 + 1; image_midy = (image_col - 1) / 2 + 1;
-        cameras(n).features_points.Location(1,:) = double(features_points.Location(:,2)) - image_midx;
-        cameras(n).features_points.Location(2,:) = double(features_points.Location(:,1)) - image_midy;
-        cameras(n).features_points.Descript = features_descript;
+        images(n).features_points.Location(1,:) = double(features_points.Location(:,2)) - image_midx;
+        images(n).features_points.Location(2,:) = double(features_points.Location(:,1)) - image_midy;
+        images(n).features_points.Descript = features_descript;
+    end
+    
+    % 计算图像两两之间的匹配点数
+    match_count = itool.ImageStitcher.neighbour(images);
+    
+    while length(bundle_group) < number_of_images
+        match_col = match_count(bundle_group,:); 
+        match_col = sum(match_col,1);
+        [~,next_image_index] = max(match_col); % 找到准备加入bundle_adjuster的下一个图像
+        bundle_group = [bundle_group next_image_index]; % 将next_image_index加入bundle_adjuster
+        %%%%%%%%%%%%%%%%%%
+        
+        %%%%%%%%%%%%%%%%%%
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    inlier_index_pairs = itool.ImageStitcher.find_inliers(cameras(1).features_points,cameras(2).features_points);
+    inlier_index_pairs = itool.ImageStitcher.find_inliers(images(1).features_points,images(2).features_points);
     
-    cameras(2).focal = 2.5;
-    X1 = cameras(1).features_points.Location(1,inlier_index_pairs(:,1));
-    Y1 = cameras(1).features_points.Location(2,inlier_index_pairs(:,1));
-    X2 = cameras(2).features_points.Location(1,inlier_index_pairs(:,2));
-    Y2 = cameras(2).features_points.Location(2,inlier_index_pairs(:,2));
-    Z1 = cameras(1).focal * radius * ones(1,length(X1)); C1 = cat(1,X1,Y1,Z1);
-    Z2 = cameras(2).focal * radius * ones(1,length(X2)); C2 = cat(1,X2,Y2,Z2);
-    H = itool.ImageStitcher.DLT(C1,C2);
-    H = H ./ H(3,3); cameras(2).theda = logm(inv(H));
-    
-%     function f = fun(x) 
-%         Ki = diag([x(4) x(4) 1]);
-%         Ri = expm([0 -x(3) x(2); x(3) 0 -x(1); -x(2) x(1) 0]);
-%         Rj = expm(cameras(1).theda)';
-%         Kj = diag([1/cameras(1).focal 1/cameras(1).focal 1]);
-%         Cm = Ki * Ri * Rj * Kj * C1; Cm = radius * Cm ./ repmat(Cm(3,:),3,1);
-%         C2 = radius * C2 ./ repmat(C2(3,:),3,1);
-%         D = C2 - Cm;
-%         f = sqrt(D(1,:).^2 + D(2,:).^2);
-%     end
-% 
-%     x0 = [0 0 0 2.5];
-%     options = optimoptions(@lsqnonlin,'Algorithm','levenberg-marquardt', ...
-%         'MaxFunEvals',10000,'TolFun',1e-10,'TolX',1e-10,'MaxIter',1000,'Display','iter');
-%     xs = lsqnonlin(@fun,x0,[],[],options);
-%     cameras(2).focal = xs(4); %xs(1) = -0.45;
-%     cameras(2).theda = [0 -xs(3) xs(2); xs(3) 0 -xs(1); -xs(2) xs(1) 0];
-%     
-%     Ki = diag([cameras(2).focal cameras(2).focal 1]);
-%     Ri = expm(cameras(2).theda);
-%     Rj = expm(cameras(1).theda)';
-%     Kj = diag([1/cameras(1).focal 1/cameras(1).focal 1]);
-%     Cm = Ki * Ri * Rj * Kj * C1; Cm = radius * Cm ./ repmat(Cm(3,:),3,1);
-%     D = C2 - Cm;
-%     f = sqrt(D(1,:).^2 + D(2,:).^2);
-%     sumf = sum(f.^2);
+    X1 = images(1).features_points.Location(1,inlier_index_pairs(:,1));
+    Y1 = images(1).features_points.Location(2,inlier_index_pairs(:,1));
+    X2 = images(2).features_points.Location(1,inlier_index_pairs(:,2));
+    Y2 = images(2).features_points.Location(2,inlier_index_pairs(:,2));
+    Z1 = radius * ones(1,length(X1)); C1 = cat(1,X1,Y1,Z1);
+    Z2 = radius * ones(1,length(X2)); C2 = cat(1,X2,Y2,Z2);
+    H12 = itool.ImageStitcher.DLT(C1,C2); H12 = H12 ./ H12(3,3);
+
+    x_start = H12 \ obj.cameras(1).H; x_start = x_start / x_start(3,3); x_start = x_start(1:8);
+    options = optimoptions(@lsqnonlin,'Algorithm','levenberg-marquardt', ...
+        'MaxFunEvals',1e5,'TolFun',1e-13,'TolX',1e-13,'MaxIter',1e5,'Display','iter');
+    x_solution = lsqnonlin(@fun,x_start,[],[],options);
+    x_solution = reshape(x_solution,8,[]);
+    obj.cameras(2).H = reshape([x_solution(:,1)' 1],3,3);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % 将计算结果记录到obj对象中  
-    for n = 1:length(cameras)
-        obj.cameras(n).K = diag([cameras(n).focal cameras(n).focal 1]);
-        obj.cameras(n).R = expm(cameras(n).theda);
+    function f = fun(x) % 内层嵌套函数,用来和lsqnonlin函数配合求最优解
+        HA = reshape(x,8,[]); 
+        [~,num] = size(HA); 
+        HA = cat(1,HA,ones(1,num)); 
+        HA = reshape(HA,3,3,[]);
+        C1_predict = HA * (obj.cameras(1).H \ C1); C1_predict = radius * C1_predict ./ repmat(C1_predict(3,:),3,1);
+        C2 = radius * C2 ./ repmat(C2(3,:),3,1);
+        D = C2 - C1_predict;
+        f = sqrt(D(1,:).^2 + D(2,:).^2);
     end
 end
