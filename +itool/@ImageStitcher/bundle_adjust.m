@@ -4,7 +4,7 @@ function obj = bundle_adjust(obj,images,radius) %
     number_of_images = length(images);
     
     % 选定第1个图像为中央对齐图像
-    obj.cameras(1).H = eye(3); obj.cameras(1).H(3,3) = 1/2.5; obj.cameras(1).H = obj.cameras(1).H / obj.cameras(1).H(3,3);
+    obj.cameras(1).H = eye(3); obj.cameras(1).H(3,3) = 1/2.5;
     bundle_group = 1;
 
     for n = 1:number_of_images % 抽取Surf特征，记录特征点坐标和描述向量
@@ -42,55 +42,46 @@ function obj = bundle_adjust(obj,images,radius) %
         Z2 = radius * ones(1,length(X2)); C2 = cat(1,X2,Y2,Z2);
         H12 = itool.ImageStitcher.DLT(C1,C2); H12 = H12 ./ H12(3,3);
         obj.cameras(next_image_idx).H = H12 \ obj.cameras(near_image_idx).H;
-        obj.cameras(next_image_idx).H = obj.cameras(next_image_idx).H ./ obj.cameras(next_image_idx).H(3,3);
         
         x_start = [];
-        for k = 2:length(bundle_group)
-            H_k = obj.cameras(bundle_group(k)).H ./ obj.cameras(bundle_group(k)).H(3,3);
-            x_start = cat(2,x_start,H_k(1:8));
+        for k = 1:length(bundle_group)
+            H_K = obj.cameras(bundle_group(k)).H;
+            x_start = cat(2,x_start,H_K(1:9));
         end
         
         % 对bundle_group中的图像作群体调整，用levenberg-marquardt算法进行最优化
         options = optimoptions(@lsqnonlin,'Algorithm','levenberg-marquardt', ...
-            'MaxFunEvals',1e5,'TolFun',1e-8,'TolX',1e-8,'MaxIter',1e4,'Display','iter');
+            'MaxFunEvals',1e6,'TolFun',1e-8,'TolX',1e-8,'MaxIter',1e4,'Display','iter');
         x_solution = lsqnonlin(@optim_func,x_start,[],[],options);
         
         % 将解向量变换为H矩阵
-        x_solution = reshape(x_solution,8,length(bundle_group)-1);
-        x_solution = cat(1,x_solution,ones(1,length(bundle_group)-1));
         x_solution = reshape(x_solution,3,3,[]);
-        for k = 2:length(bundle_group)
-            obj.cameras(bundle_group(k)).H = x_solution(:,:,k-1);
+        for k = 1:length(bundle_group)
+            obj.cameras(bundle_group(k)).H = x_solution(:,:,k);
         end
     end
     
     function f = optim_func(x) % 内层嵌套函数,和lsqnonlin函数配合求最优解
         f = [];
         num = length(bundle_group); % 需要位置寻优的图像个数=bundle_group元素个数
-        H = reshape(x,8,num-1); 
-        H = cat(1,H,ones(1,num-1)); 
-        H = reshape(H,3,3,num-1); 
-        H = cat(3,obj.cameras(1).H,H); % 构造所有的H矩阵 
+        H = reshape(x,3,3,num); H(1:8) = obj.cameras(1).H(1:8); % 构造所有的H矩阵
         for p = 1:num
-            % for q = 1:num
             for q = (p+1):num
-                if q~=p
-                    image_idx1 = bundle_group(p);
-                    image_idx2 = bundle_group(q);
+                image_idx1 = bundle_group(p);
+                image_idx2 = bundle_group(q);
+                if inliers_count(image_idx1,image_idx2) ~= 0
                     inliers_pair = inliers(image_idx1,image_idx2).inliers;
-                    if ~isempty(inliers_pair)
-                        Xp = images(image_idx1).features_points.Location(1,inliers_pair(:,1));
-                        Yp = images(image_idx1).features_points.Location(2,inliers_pair(:,1));
-                        Xq = images(image_idx2).features_points.Location(1,inliers_pair(:,2));
-                        Yq = images(image_idx2).features_points.Location(2,inliers_pair(:,2));
-                        Zp = radius * ones(1,length(Xp)); Cp = cat(1,Xp,Yp,Zp);
-                        Zq = radius * ones(1,length(Xq)); Cq = cat(1,Xq,Yq,Zq);
-                        Cq_predict = H(:,:,p) * (H(:,:,q) \ Cq);
-                        Cq_predict = radius * Cq_predict ./ repmat(Cq_predict(3,:),3,1);
-                        Dis = Cp - Cq_predict;
-                        Dis = sqrt(Dis(1,:).^2 + Dis(2,:).^2);
-                        f = cat(2,f,Dis);
-                    end
+                    Xp = images(image_idx1).features_points.Location(1,inliers_pair(:,1));
+                    Yp = images(image_idx1).features_points.Location(2,inliers_pair(:,1));
+                    Xq = images(image_idx2).features_points.Location(1,inliers_pair(:,2));
+                    Yq = images(image_idx2).features_points.Location(2,inliers_pair(:,2));
+                    Zp = radius * ones(1,length(Xp)); Cp = cat(1,Xp,Yp,Zp);
+                    Zq = radius * ones(1,length(Xq)); Cq = cat(1,Xq,Yq,Zq);
+                    Cq_predict = H(:,:,p) * (H(:,:,q) \ Cq);
+                    Cq_predict = radius * Cq_predict ./ repmat(Cq_predict(3,:),3,1);
+                    Dis = Cp - Cq_predict;
+                    Dis = sqrt((Dis(1,:).^2 + Dis(2,:).^2) ./ inliers_count(image_idx1,image_idx2));
+                    f = cat(2,f,Dis);
                 end
             end
         end

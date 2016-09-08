@@ -1,7 +1,7 @@
 function obj = estimate(obj, images)
 %estimate 估计拼接参数
 %   images：需要被拼接的图片数组
-    obj.canvas_row_num = 1080; obj.canvas_col_num = 5400; angle = 360 * pi / 180;
+    obj.canvas_row_num = 1080; obj.canvas_col_num = 7560; angle = 360 * pi / 180;
     row_num = obj.canvas_row_num; col_num = obj.canvas_col_num; % 计算最终的行数和列数，即最终的图像分辨率 
     radius_cylind = (col_num+1)/angle; % 计算圆柱的半径
     midx = (row_num-1)/2 + 1; midy = (col_num-1)/2 + 1; % 计算X坐标的中值点和Y坐标的中值点
@@ -32,6 +32,11 @@ function obj = estimate(obj, images)
         obj.cameras(n).mask = mask; % 记录第n个图片的蒙板
         obj.cameras(n).query_x = X_I_euclid(mask) + image_midx; % 记录第n个图片的插值查询点 
         obj.cameras(n).query_y = Y_I_euclid(mask) + image_midy; % 记录第n个图片的插值查询点
+        
+        mask2d = reshape(mask,obj.canvas_row_num,obj.canvas_col_num);
+        front_finder = ones(3,3); front_finder(5) = -8;
+        front_mat = conv2(double(mask2d),front_finder,'same');
+        obj.cameras(n).front = find(front_mat<0); 
     end
 end
 
