@@ -64,7 +64,7 @@ function obj = bundle_adjust(obj,images,radius) %
     function f = optim_func(x) % 内层嵌套函数,和lsqnonlin函数配合求最优解
         f = [];
         num = length(bundle_group); % 需要位置寻优的图像个数=bundle_group元素个数
-        H = reshape(x,3,3,num); H(1:8) = obj.cameras(1).H(1:8); % 构造所有的H矩阵
+        H = reshape(x,3,3,num); % 构造所有的H矩阵 H(1:8) = obj.cameras(1).H(1:8); 
         for p = 1:num
             for q = (p+1):num
                 image_idx1 = bundle_group(p);
