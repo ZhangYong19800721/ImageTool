@@ -15,9 +15,6 @@ function obj = estimate(obj, images)
     % 对所有的相机参数进行估计
     obj = obj.bundle_adjust(images,radius_cylind);
     
-    % 计算增益补偿权值
-    % obj = obj.gain_compensation(images);
-    
     % 根据相机参数H，计算每个图片对应的蒙板和插值查询点坐标
     number_of_images = length(images); % 需要拼接的图片个数
     for n = 1:number_of_images
@@ -36,7 +33,10 @@ function obj = estimate(obj, images)
         mask2d = reshape(mask,obj.canvas_row_num,obj.canvas_col_num);
         front_finder = ones(3,3); front_finder(5) = -8;
         front_mat = conv2(double(mask2d),front_finder,'same');
-        obj.cameras(n).front = find(front_mat<0); 
+        obj.cameras(n).front = find(front_mat<0); % 计算得到第n个图片的边框线条
     end
+    
+    % 计算增益补偿权值
+    % obj = obj.gain_compensation(images);
 end
 
