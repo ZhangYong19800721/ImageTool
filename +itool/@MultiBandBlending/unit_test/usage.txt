@@ -1,0 +1,4 @@
+im1 = imread('eye.bmp');  im1 = double(rgb2gray(im1));
+im2 = imread('hand.bmp'); im2 = double(rgb2gray(im2));
+im3 = imread('mask.bmp'); im3 = double(im3);
+C = BlendArbitrary(im1, im2, im3/255, 4);

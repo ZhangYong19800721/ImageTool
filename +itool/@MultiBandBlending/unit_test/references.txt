@@ -1,0 +1,7 @@
+
+A Multiresolution Spline With Application to Image Mosaics (1983)  Peter J. Burt, Edward H. Adelson
+ACM Transactions on Graphics
+
+
+Burt, P. J., and Adelson, E. H. The Laplacian pyramid as a compact image code. IEEE Trans. Communications
+31 (1983), 532–540.

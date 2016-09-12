@@ -10,7 +10,11 @@ function canvas = stitch(obj, images, isline)
     V = zeros(obj.canvas_row_num,obj.canvas_col_num);
    
     for n = number_of_images:-1:1
-        image = images(n).image;
+        image = images(n).image; % 取得图像
+        image_yuv = rgb2ycbcr(image); 
+        image_yuv(:,:,1) = uint8(obj.cameras(n).gain .* double(image_yuv(:,:,1))); % 作亮度调整
+        image = ycbcr2rgb(image_yuv); 
+        
         [image_row_num, image_col_num, ~] = size(image);
         [IX, IY] = meshgrid(1:image_row_num,1:image_col_num);
         image_mask = logical(obj.cameras(n).mask);

@@ -37,6 +37,6 @@ function obj = estimate(obj, images)
     end
     
     % 计算增益补偿权值
-    % obj = obj.gain_compensation(images);
+    obj = obj.gain_compensation(images);
 end
 
