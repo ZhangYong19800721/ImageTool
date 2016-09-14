@@ -40,7 +40,8 @@ function obj = bundle_adjust(obj,images,radius) %
         Y2 = images(next_image_idx).features_points.Location(2,inlier_index_pairs(:,2));
         Z1 = radius * ones(1,length(X1)); C1 = cat(1,X1,Y1,Z1);
         Z2 = radius * ones(1,length(X2)); C2 = cat(1,X2,Y2,Z2);
-        H12 = itool.ImageStitcher.DLT(C1,C2); H12 = H12 ./ H12(3,3);
+        H12 = itool.ImageStitcher.DLT(C1,C2); 
+        H12 = H12 ./ H12(3,3); % 很重要，用来确保做柱面投射时得到正确的结果
         obj.cameras(next_image_idx).H = H12 \ obj.cameras(near_image_idx).H;
         
         x_start = [];
@@ -64,7 +65,7 @@ function obj = bundle_adjust(obj,images,radius) %
     function f = optim_func(x) % 内层嵌套函数,和lsqnonlin函数配合求最优解
         f = [];
         num = length(bundle_group); % 需要位置寻优的图像个数=bundle_group元素个数
-        H = reshape(x,3,3,num); % 构造所有的H矩阵 H(1:8) = obj.cameras(1).H(1:8); 
+        H = reshape(x,3,3,num); % 构造所有的H矩阵 
         for p = 1:num
             for q = (p+1):num
                 image_idx1 = bundle_group(p);
