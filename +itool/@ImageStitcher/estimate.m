@@ -1,7 +1,7 @@
 function obj = estimate(obj, images)
 %estimate 估计拼接参数
 %   images：需要被拼接的图片数组
-    obj.canvas_row_num = 1024; obj.canvas_col_num = 8192; angle = 360 * pi / 180; % 计算最终的行数和列数，即最终的图像分辨率
+    obj.canvas_row_num = 1024; obj.canvas_col_num = 2048; angle = 360 * pi / 180; % 计算最终的行数和列数，即最终的图像分辨率
     radius_cylind = (obj.canvas_col_num+1)/angle; % 计算圆柱的半径
     midx = (obj.canvas_row_num-1)/2 + 1; midy = (obj.canvas_col_num-1)/2 + 1; % 计算X坐标的中值点和Y坐标的中值点
     [Y_cylind,X_cylind] = meshgrid(1:obj.canvas_col_num,1:obj.canvas_row_num); % 获取坐标网格（圆柱坐标系）
@@ -12,13 +12,13 @@ function obj = estimate(obj, images)
     XYZ_euclid = itool.ImageStitcher.inv_cylindrical(XYZ_cylind); % 将圆柱坐标系的坐标值变换为欧氏坐标系的坐标值
     
     % 对所有的相机参数进行估计
-    obj = obj.bundle_adjust(images,radius_cylind);
+    obj = obj.bundle_adjust(images);
     
     % 根据相机参数H，计算每个图片对应的蒙板和插值查询点坐标
     number_of_images = length(images); % 需要拼接的图片个数
     for n = 1:number_of_images
         XYZ_Q_euclid = obj.cameras(n).H * XYZ_euclid; % 开始计算插值查询点坐标
-        XYZ_I_euclid = radius_cylind * XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1));
+        XYZ_I_euclid = XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1));
         X_I_euclid = XYZ_I_euclid(1,:); Y_I_euclid = XYZ_I_euclid(2,:); Z_I_euclid = XYZ_I_euclid(3,:); 
         [image_row_num,image_col_num,~] = size(images(n).image); % 获取图像的大小
         image_midx = (image_row_num-1)/2 + 1; image_midy = (image_col_num-1)/2 + 1; % 计算图像的中值点

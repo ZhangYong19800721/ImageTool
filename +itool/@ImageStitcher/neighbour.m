@@ -14,11 +14,6 @@ function [inliers_count,inliers] = neighbour(images)
     end
     
     inliers_count = triu(inliers_count,1) + triu(inliers_count,1)';
-%     % 每一行中只取最大的两个元素
-%     for n = 1:number_of_images
-%         [~,sort_idx] = sort(inliers_count(n,:),'descend');
-%         inliers_count(n,sort_idx(3:length(sort_idx))) = 0;
-%     end
     
     % 滤除所有小于10的元素
     inliers_count(inliers_count<10) = 0;

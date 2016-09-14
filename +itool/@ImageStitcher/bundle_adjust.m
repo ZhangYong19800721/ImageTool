@@ -1,10 +1,10 @@
-function obj = bundle_adjust(obj,images,radius) % 
+function obj = bundle_adjust(obj,images) % 
 %BUNDLE_ADJUST 对输入的N个image，作群体微调
 %   此处显示详细说明
     number_of_images = length(images);
     
     % 选定第1个图像为中央对齐图像
-    obj.cameras(1).H = eye(3); obj.cameras(1).H(3,3) = 1/2.5;
+    obj.cameras(1).H = eye(3); obj.cameras(1).H(3,3) = 1/1500;
     bundle_group = 1;
 
     for n = 1:number_of_images % 抽取Surf特征，记录特征点坐标和描述向量
@@ -38,8 +38,8 @@ function obj = bundle_adjust(obj,images,radius) %
         Y1 = images(near_image_idx).features_points.Location(2,inlier_index_pairs(:,1));
         X2 = images(next_image_idx).features_points.Location(1,inlier_index_pairs(:,2));
         Y2 = images(next_image_idx).features_points.Location(2,inlier_index_pairs(:,2));
-        Z1 = radius * ones(1,length(X1)); C1 = cat(1,X1,Y1,Z1);
-        Z2 = radius * ones(1,length(X2)); C2 = cat(1,X2,Y2,Z2);
+        Z1 = ones(1,length(X1)); C1 = cat(1,X1,Y1,Z1);
+        Z2 = ones(1,length(X2)); C2 = cat(1,X2,Y2,Z2);
         H12 = itool.ImageStitcher.DLT(C1,C2); 
         H12 = H12 ./ H12(3,3); % 很重要，用来确保做柱面投射时得到正确的结果
         obj.cameras(next_image_idx).H = H12 \ obj.cameras(near_image_idx).H;
@@ -76,10 +76,10 @@ function obj = bundle_adjust(obj,images,radius) %
                     Yp = images(image_idx1).features_points.Location(2,inliers_pair(:,1));
                     Xq = images(image_idx2).features_points.Location(1,inliers_pair(:,2));
                     Yq = images(image_idx2).features_points.Location(2,inliers_pair(:,2));
-                    Zp = radius * ones(1,length(Xp)); Cp = cat(1,Xp,Yp,Zp);
-                    Zq = radius * ones(1,length(Xq)); Cq = cat(1,Xq,Yq,Zq);
+                    Zp = ones(1,length(Xp)); Cp = cat(1,Xp,Yp,Zp);
+                    Zq = ones(1,length(Xq)); Cq = cat(1,Xq,Yq,Zq);
                     Cq_predict = H(:,:,p) * (H(:,:,q) \ Cq);
-                    Cq_predict = radius * Cq_predict ./ repmat(Cq_predict(3,:),3,1);
+                    Cq_predict = Cq_predict ./ repmat(Cq_predict(3,:),3,1);
                     Dis = Cp - Cq_predict;
                     Dis = sqrt((Dis(1,:).^2 + Dis(2,:).^2) ./ inliers_count(image_idx1,image_idx2));
                     f = cat(2,f,Dis);
