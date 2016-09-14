@@ -28,6 +28,7 @@ classdef ImageStitcher
         XYZ_euclid = inv_cylindrical(XYZ_cylind) % 将圆柱坐标系坐标转换为直角坐标系坐标 
         pos_e = inv_spherical(pos_s) % 将球面坐标系坐标转换为直角坐标系坐标
         [inliers_count,inliers] = neighbour(images) % 计算图像两两之间的匹配点数
+        exit = unit_test1();
     end
     
 end
