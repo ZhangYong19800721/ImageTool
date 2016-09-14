@@ -1,11 +1,10 @@
 function obj = estimate(obj, images)
 %estimate 估计拼接参数
 %   images：需要被拼接的图片数组
-    obj.canvas_row_num = 1024; obj.canvas_col_num = 8192; angle = 360 * pi / 180;
-    row_num = obj.canvas_row_num; col_num = obj.canvas_col_num; % 计算最终的行数和列数，即最终的图像分辨率 
-    radius_cylind = (col_num+1)/angle; % 计算圆柱的半径
-    midx = (row_num-1)/2 + 1; midy = (col_num-1)/2 + 1; % 计算X坐标的中值点和Y坐标的中值点
-    [Y_cylind,X_cylind] = meshgrid(1:col_num,1:row_num); % 获取坐标网格（圆柱坐标系）
+    obj.canvas_row_num = 1024; obj.canvas_col_num = 8192; angle = 360 * pi / 180; % 计算最终的行数和列数，即最终的图像分辨率
+    radius_cylind = (obj.canvas_col_num+1)/angle; % 计算圆柱的半径
+    midx = (obj.canvas_row_num-1)/2 + 1; midy = (obj.canvas_col_num-1)/2 + 1; % 计算X坐标的中值点和Y坐标的中值点
+    [Y_cylind,X_cylind] = meshgrid(1:obj.canvas_col_num,1:obj.canvas_row_num); % 获取坐标网格（圆柱坐标系）
     X_cylind = X_cylind - midx; Y_cylind = Y_cylind - midy; % 将中心位置对准坐标原点（圆柱坐标系）
     Z_cylind = radius_cylind * ones(size(X_cylind)); % 半径（圆柱坐标系）
     X_cylind = reshape(X_cylind,1,[]); Y_cylind = reshape(Y_cylind,1,[]); Z_cylind = reshape(Z_cylind,1,[]); 
