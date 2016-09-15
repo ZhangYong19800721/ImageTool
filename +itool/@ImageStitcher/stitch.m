@@ -11,6 +11,7 @@ function canvas = stitch(obj, images, options)
     M = logical(zeros(size(Y)));
     
     for n = number_of_images:-1:1
+    %for n = 1:number_of_images
         image = double(images(n).image);
         
         if options.is_gain_compensation

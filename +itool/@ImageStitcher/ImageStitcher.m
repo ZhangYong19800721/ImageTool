@@ -23,11 +23,11 @@ classdef ImageStitcher
         % pos_s = spherical(pos_e,s) % 将直角坐标系坐标转换为球面坐标系坐标
         % [canvas,mask] = homography(r,R,image) % 将图像使用H矩阵投影变换
         
-        inliers = find_inliers(features_point1, features_point2) % 寻找两组特征之间的inliers点
+        [match_index_pairs,inlier_index_pairs] = find_match(features_point1, features_point2) % 寻找两组特征之间的匹配点
         H = DLT(match_points1, match_points2) % 使用DLT算法估计两组匹配点之间的透视变换矩阵
         XYZ_euclid = inv_cylindrical(XYZ_cylind) % 将圆柱坐标系坐标转换为直角坐标系坐标 
         pos_e = inv_spherical(pos_s) % 将球面坐标系坐标转换为直角坐标系坐标
-        [inliers_count,inliers] = neighbour(images) % 计算图像两两之间的匹配点数
+        [match_count,match_index_pair,inlier_count,inlier_index_pair] = neighbour(images) % 计算图像两两之间的匹配点数
         exit = unit_test1();
     end
     
