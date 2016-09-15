@@ -4,7 +4,10 @@ function obj = bundle_adjust(obj,images) %
     number_of_images = length(images);
     
     % 选定第1个图像为中央对齐图像
-    obj.cameras(1).H = eye(3); obj.cameras(1).H(3,3) = 1/2;
+    obj.cameras(1).P = [0 0 0 1]';
+    obj.cameras(1).R = expm(zeros(3));
+    obj.cameras(1).K = diag([1 1 1]);
+
     bundle_group = 1;
 
     for n = 1:number_of_images % 抽取SURF特征，记录特征点坐标和描述向量
@@ -34,67 +37,58 @@ function obj = bundle_adjust(obj,images) %
         near(setxor(1:number_of_images,bundle_group)) = 0;
         [~,near_image_idx] = max(near);
         
-        inlier_pair = inlier_index_pair(near_image_idx,next_image_idx).inlier_idx_pair;
-        X1 = images(near_image_idx).features_points.location(1,inlier_pair(:,1));
-        Y1 = images(near_image_idx).features_points.location(2,inlier_pair(:,1));
-        X2 = images(next_image_idx).features_points.location(1,inlier_pair(:,2));
-        Y2 = images(next_image_idx).features_points.location(2,inlier_pair(:,2));
-        Z1 = 1000 * ones(1,length(X1)); 
-        Z2 = 1000 * ones(1,length(X2)); 
-        C1 = cat(1,X1,Y1,Z1);
-        C2 = cat(1,X2,Y2,Z2);
-        H12 = itool.ImageStitcher.DLT(C1,C2); 
-        H12 = H12 ./ H12(3,3); % 很重要，用来确保做柱面投射时得到正确的结果
-        obj.cameras(next_image_idx).H = H12 \ obj.cameras(near_image_idx).H;
-        
-%         obj.cameras(next_image_idx).H = obj.cameras(near_image_idx).H;
+        obj.cameras(next_image_idx).P = obj.cameras(near_image_idx).P;
                 
         x_start = []; % 准备搜索的起始位置
         for k = 1:length(bundle_group)
-            x_start = cat(3,x_start,obj.cameras(bundle_group(k)).H);
+            x_start = cat(2,x_start,obj.cameras(bundle_group(k)).P);
         end
         
         options = optimoptions(@lsqnonlin,'Algorithm','levenberg-marquardt', ...
             'MaxFunEvals',1e6,'TolFun',1e-8,'TolX',1e-8,'MaxIter',1e4,'Display','iter');
+
+        % 对bundle_group中的图像作群体调整，用levenberg-marquardt算法进行最优化
+        x_solution = lsqnonlin(@error_func,x_start,[],[],options);
         
-        delta = 4096;
-        x_solution = x_start;
-        while delta ~= 2
-            delta = max(2, delta / 2);
-            % 对bundle_group中的图像作群体调整，用levenberg-marquardt算法进行最优化
-            x_solution = lsqnonlin(@error_func,x_solution,[],[],options);
-        end
-        
-        % 将解向量变换为H矩阵
+        % 将解向量变换为P,R,K矩阵
         for k = 1:length(bundle_group)
-            obj.cameras(bundle_group(k)).H = x_solution(:,:,k);
+            ss = x_solution(:,k);
+            obj.cameras(bundle_group(k)).P = ss;
+            obj.cameras(bundle_group(k)).R = expm([0 -ss(3) ss(2); ss(3) 0 -ss(1); -ss(2) ss(1) 0]);
+            obj.cameras(bundle_group(k)).K = diag([ss(4) ss(4) 1]);
         end
     end
     
-    function f = error_func(H) % 内层嵌套函数,和lsqnonlin函数配合求最优解
+    function f = error_func(x) % 内层嵌套函数,和lsqnonlin函数配合求最优解
         f = [];
         num = length(bundle_group); % 需要位置寻优的图像个数=bundle_group元素个数
-        % H = reshape(H,3,3,num); % 构造所有的H矩阵 
-        H(1:9) = [1 0 0 0 1 0 0 0 1/2];
+        R = zeros(3,3,num);
+        K = zeros(3,3,num);
+        
+        for p = 1:num
+            R(:,:,p) = expm([0 -x(3,p) x(2,p); x(3,p) 0 -x(1,p); -x(2,p) x(1,p) 0]);
+            K(:,:,p) = diag([x(4,p) x(4,p) 1]);
+        end
+        
         for p = 1:num
             for q = (p+1):num
                 image_idx1 = bundle_group(p);
                 image_idx2 = bundle_group(q);
                 if match_count(image_idx1,image_idx2) ~= 0
-                    match_pair = match_index_pair(image_idx1,image_idx2).match_idx_pair;
-                    Xp = images(image_idx1).features_points.location(1,match_pair(:,1));
-                    Yp = images(image_idx1).features_points.location(2,match_pair(:,1));
-                    Xq = images(image_idx2).features_points.location(1,match_pair(:,2));
-                    Yq = images(image_idx2).features_points.location(2,match_pair(:,2));
+                    inlier_pair = inlier_index_pair(image_idx1,image_idx2).inlier_idx_pair;
+                    Xp = images(image_idx1).features_points.location(1,inlier_pair(:,1));
+                    Yp = images(image_idx1).features_points.location(2,inlier_pair(:,1));
+                    Xq = images(image_idx2).features_points.location(1,inlier_pair(:,2));
+                    Yq = images(image_idx2).features_points.location(2,inlier_pair(:,2));
                     Zp = 1000 * ones(1,length(Xp)); 
                     Zq = 1000 * ones(1,length(Xq)); 
                     Cp = cat(1,Xp,Yp,Zp);
                     Cq = cat(1,Xq,Yq,Zq);
-                    Cq_predict = H(:,:,p) * (H(:,:,q) \ Cq);
-                    Cq_predict = 1000 * Cq_predict ./ repmat(Cq_predict(3,:),3,1);
-                    error_value = Cp(1:2,:) - Cq_predict(1:2,:);
+                    Cp_predict = K(:,:,p) * R(:,:,p) * R(:,:,q)' * diag(1./diag(K(:,:,q))) * Cq;
+                    Cp_predict = 1000 * Cp_predict ./ repmat(Cp_predict(3,:),3,1);
+                    error_value = Cp(1:2,:) - Cp_predict(1:2,:);
                     distance = sqrt(sum(error_value.^2));
-                    distance(distance > delta) = sqrt(delta * distance(distance > delta) - delta.^2);
+                    % distance(distance > delta) = sqrt(delta * distance(distance > delta) - delta.^2);
                     % distance = distance ./ match_count(image_idx1,image_idx2);
                     f = cat(2,f,distance);
                 end
