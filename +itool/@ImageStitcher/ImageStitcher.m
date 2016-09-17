@@ -15,6 +15,7 @@ classdef ImageStitcher
         obj = bundle_adjust(obj,images,radius) % 对输入的N个image，作群体微调
         obj = gain_compensation(obj,images) % 亮度增益补偿算法
         obj = wave_correct(obj) % 波浪修正算法
+        obj = interp_pos(obj,XYZ_euclid,images) % 计算差值查询点
     end
     
     methods(Static)

@@ -23,8 +23,8 @@ function exit = unit_test1()
     options.is_gain_compensation = true;
     result = istitcher.stitch(images,options);
     imshow(result)
-    imwrite(result,'result.bmp');
     save('result_group4.mat');
+    imwrite(result,'result.bmp');
     toc
     exit = true;
 end
