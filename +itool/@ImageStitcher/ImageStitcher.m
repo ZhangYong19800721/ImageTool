@@ -6,6 +6,8 @@ classdef ImageStitcher
         cameras % struct结构体数组，用来记录相机的参数
         canvas_row_num; % 画布的行数 
         canvas_col_num; % 画布的列数 
+        XYZ_euclid; % 画布的坐标点
+        UP; % 做波浪修正时的垂直向量
     end
     
     methods
@@ -15,7 +17,8 @@ classdef ImageStitcher
         obj = bundle_adjust(obj,images,radius) % 对输入的N个image，作群体微调
         obj = gain_compensation(obj,images) % 亮度增益补偿算法
         obj = wave_correct(obj) % 波浪修正算法
-        obj = interp_pos(obj,XYZ_euclid,images) % 计算差值查询点
+        obj = interp_pos(obj,images) % 计算差值查询点
+        obj = create_canvas(obj,row_num,col_num) % 创建画布
     end
     
     methods(Static)

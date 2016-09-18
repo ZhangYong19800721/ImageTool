@@ -17,9 +17,9 @@ function exit = unit_test1()
     images(11).image = imread('E:\WorkSpace\itool\+itool\@ImageStitcher\unit_test\IMG_0011.JPG');
     images(12).image = imread('E:\WorkSpace\itool\+itool\@ImageStitcher\unit_test\IMG_0012.JPG');
     
-    istitcher = itool.ImageStitcher().estimate(images, 2048, 4096);
+    istitcher = itool.ImageStitcher().estimate(images, 2048, 8192);
     options.is_blending = false;
-    options.is_show_skeleton = true;
+    options.is_show_skeleton = false;
     options.is_gain_compensation = true;
     result = istitcher.stitch(images,options);
     imshow(result)
