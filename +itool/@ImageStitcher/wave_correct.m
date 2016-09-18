@@ -16,6 +16,6 @@ function obj = wave_correct(obj)
     
     R1 = expm([0 -t3 0; t3 0 0; 0 0 0]);
     R2 = expm([0 0 t2; 0 0 0; -t2 0 0]);
-    obj.UP = R1 * R2;
+    obj.correct = R1 * R2;
 end
 

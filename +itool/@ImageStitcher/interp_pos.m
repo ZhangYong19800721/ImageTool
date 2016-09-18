@@ -3,7 +3,7 @@ function obj = interp_pos(obj,images)
 %   此处显示详细说明
     number_of_images = length(images); % 需要拼接的图片个数
     for n = 1:number_of_images
-        XYZ_Q_euclid = obj.cameras(n).K * obj.cameras(n).R * obj.UP * obj.XYZ_euclid; % 开始计算插值查询点坐标
+        XYZ_Q_euclid = obj.cameras(n).K * obj.cameras(n).R * obj.correct * obj.xyz; % 开始计算插值查询点坐标
         XYZ_I_euclid = 1000 * XYZ_Q_euclid ./ abs(repmat(XYZ_Q_euclid(3,:),3,1));
         X_I_euclid = XYZ_I_euclid(1,:); Y_I_euclid = XYZ_I_euclid(2,:); Z_I_euclid = XYZ_I_euclid(3,:); 
         [image_row_num,image_col_num,~] = size(images(n).image); % 获取图像的大小
