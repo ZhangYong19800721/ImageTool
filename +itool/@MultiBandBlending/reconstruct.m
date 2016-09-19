@@ -1,12 +1,8 @@
-function out = reconstruct(input_pyramid)
-
-[m,n, level] = size(input_pyramid);
-
-s = 1/power(2,level-1);
-
-out = input_pyramid(1:m*s,1:n*s,level);
-
-for i = level-1:-1:1
-    s = 1/power(2,i-1);
-    out = itool.MultiBandBlending.expand(out) + input_pyramid(1:m*s,1:n*s,i);      
+function output = reconstruct(input)
+    level = length(input);
+    output = input{level};
+    for i = level-1:-1:1
+        A = input{i}; B = itool.MultiBandBlending.expand(output); [row,col] = size(A);
+        output = A + B(1:row,1:col);
+    end
 end

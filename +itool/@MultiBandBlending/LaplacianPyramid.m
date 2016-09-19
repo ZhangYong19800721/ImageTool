@@ -1,20 +1,8 @@
 function [L, G] = LaplacianPyramid( input, level )
-
-% function constructs the so called laplacian pyramid of an image. Each
-% level is equal to a different band in the freq. domain. It is found by
-% taking the difference of the expanded higher levels of the gaussian
-% pyramid from a succesive lower level. 
-
-[m,n] =size(input);
-
-G = itool.MultiBandBlending.GaussianPyramid(input,level);
-
-for i = 1:level-1
-    
-    s = 1/power(2,i-1);
-    L(1:m*s,1:n*s,i) = G(1:m*s,1:n*s,i) - itool.MultiBandBlending.expand(G(1:m*s/2,1:n*s/2,i+1));
-    
+    G = itool.MultiBandBlending.GaussianPyramid(input,level);
+    for i = 1:level-1
+        A = G{i}; B = itool.MultiBandBlending.expand(G{i+1});[row,col] = size(A);
+        L{i} = A - B(1:row,1:col); % 计算拉普拉斯金字塔
+    end
+    L{level} = G{level}; % 最顶层直接复制
 end
-
-s = 1/power(2,level-1);
-L(1:m*s,1:n*s,level) = G(1:m*s,1:n*s,level);

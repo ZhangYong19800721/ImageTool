@@ -59,6 +59,8 @@ function obj = bundle_adjust(obj,images) %
         end
     end
     
+    obj.sequence = bundle_group;
+    
     function f = error_func(x) % 内层嵌套函数,和lsqnonlin函数配合求最优解
         f = [];
         num = length(bundle_group); % 需要位置寻优的图像个数=bundle_group元素个数

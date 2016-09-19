@@ -10,8 +10,7 @@ function canvas = stitch(obj, images, options)
     V = zeros(obj.canvas_row_num,obj.canvas_col_num);
     M = logical(zeros(size(Y)));
     
-    for n = number_of_images:-1:1
-    %for n = 1:number_of_images
+    for n = obj.sequence
         image = double(images(n).image);
         
         if options.is_gain_compensation
@@ -25,23 +24,25 @@ function canvas = stitch(obj, images, options)
         mask2d = reshape(logical(obj.cameras(n).mask),obj.canvas_row_num,obj.canvas_col_num);
         
         if options.is_blending    
-            Y_I = zeros(obj.canvas_row_num,obj.canvas_col_num); 
-            U_I = zeros(obj.canvas_row_num,obj.canvas_col_num);
-            V_I = zeros(obj.canvas_row_num,obj.canvas_col_num);
+            temp_Y = zeros(obj.canvas_row_num,obj.canvas_col_num); 
+            temp_U = zeros(obj.canvas_row_num,obj.canvas_col_num);
+            temp_V = zeros(obj.canvas_row_num,obj.canvas_col_num);
             
-            Y_I(mask2d) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
-            U_I(mask2d) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
-            V_I(mask2d) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            temp_Y(mask2d) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            temp_U(mask2d) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            temp_V(mask2d) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
             
-            Y = itool.MultiBandBlending.test_blend(Y,Y_I,M,mask2d,6);
-            U = itool.MultiBandBlending.test_blend(U,U_I,M,mask2d,6);
-            V = itool.MultiBandBlending.test_blend(V,V_I,M,mask2d,6);
+            Y = obj.blend(Y,M,temp_Y,mask2d,9);
+            U = obj.blend(U,M,temp_U,mask2d,9);
+            V = obj.blend(V,M,temp_V,mask2d,9);
             M(mask2d) = 1;
         else
             Y(mask2d) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
             U(mask2d) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
             V(mask2d) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
         end
+        
+        imwrite(uint8(cat(3,Y,U,V)),strcat(strcat('figure',num2str(n)),'.bmp'));
     end
     
     if options.is_show_skeleton

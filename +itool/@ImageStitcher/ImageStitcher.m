@@ -8,10 +8,12 @@ classdef ImageStitcher
         canvas_col_num; % 画布的列数 
         xyz; % 画布的坐标点
         correct; % 做波浪修正时的垂直向量
+        sequence; % 拼接贴图顺序
+        alfa; % 水平全景视角
+        beda; % 垂直全景视角
     end
     
     methods
-        % canvas = stitch_test(obj, images, sequence)
         canvas = stitch(obj, images, isline) % 输入N个image，输出拼接结果
         obj = estimate(obj, images, row_num, col_num, warper) % 输入N个image，估计拼接参数
         obj = bundle_adjust(obj,images,radius) % 对输入的N个image，作群体微调
@@ -19,6 +21,7 @@ classdef ImageStitcher
         obj = wave_correct(obj) % 波浪修正算法
         obj = interp_pos(obj,images) % 计算差值查询点
         obj = create_canvas(obj,row_num,col_num,warper) % 创建画布
+        image = blend(obj,image1,mask1,image2,mask2,level) % 对图像进行融合
     end
     
     methods(Static)

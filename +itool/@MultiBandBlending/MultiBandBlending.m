@@ -8,9 +8,9 @@ classdef MultiBandBlending
     methods(Static)
         G = GaussianPyramid(input, level)
         [L, G] = LaplacianPyramid( input, level )
-        out = reduce(input)
-        out = expand(input)
-        out = reconstruct(input_pyramid)
+        output = reduce(input)
+        output = expand(input)
+        output = reconstruct(input)
         image = Blend(image1, image2, level, boundary) 
         image = test_blend(image1, image2, mask1, mask2, level)
         exit = unit_test1();
