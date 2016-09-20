@@ -5,7 +5,7 @@ function obj = gain_compensation(obj,images) % 亮度增益补偿算法
     N_value = zeros(number_of_images); % 第(i,j)个元素表示第i个图像和第j个图像之间的重叠像素个数（重叠区域的面积）
     for n = 1:number_of_images
         for m = n:number_of_images
-            N_value(n,m) = sum(obj.cameras(n).mask & obj.cameras(m).mask);
+            N_value(n,m) = sum(sum(obj.cameras(n).mask & obj.cameras(m).mask));
         end
     end
     N_value = triu(N_value) + triu(N_value)';

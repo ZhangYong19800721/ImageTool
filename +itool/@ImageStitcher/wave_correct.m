@@ -9,13 +9,13 @@ function obj = wave_correct(obj)
         A = A + Z*Z';
     end
     
-    [~, ~, V] = svd(A);
+    [U, S, V] = svd(A);
     h = V(:,end);
-    t3 = atan(h(2)/h(1));
-    t2 = atan(h(3)/sqrt(h(1).^2 + h(2).^2));
     
-    R1 = expm([0 -t3 0; t3 0 0; 0 0 0]);
-    R2 = expm([0 0 t2; 0 0 0; -t2 0 0]);
-    obj.correct = R1 * R2;
+    t1 = 0;
+    t2 = -atan(h(3)/sqrt(h(1).^2 + h(2).^2)); % TODO 检查什么情况下应该取负号
+    t3 = atan(h(2)/h(1));
+   
+    obj.correct = expm([0 -t3 t2; t3 0 -t1; -t2 t1 0]);
 end
 

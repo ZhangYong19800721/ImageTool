@@ -11,13 +11,12 @@ function obj = interp_pos(obj,images)
         mask = (X_I_euclid >= (1-image_midx)) & (X_I_euclid <= (image_row_num-image_midx)) & ...
                (Y_I_euclid >= (1-image_midy)) & (Y_I_euclid <= (image_col_num-image_midy)) & ...
                (Z_I_euclid > 0); % 计算得到该图像对应的蒙板
-        obj.cameras(n).mask = mask; % 记录第n个图片的蒙板
+        obj.cameras(n).mask = reshape(mask,obj.canvas_row_num,obj.canvas_col_num); % 记录第n个图片的蒙板
         obj.cameras(n).query_x = X_I_euclid(mask) + image_midx; % 记录第n个图片的插值查询点 
         obj.cameras(n).query_y = Y_I_euclid(mask) + image_midy; % 记录第n个图片的插值查询点
         
-        mask2d = reshape(mask,obj.canvas_row_num,obj.canvas_col_num);
         front_finder = ones(3,3); front_finder(5) = -8;
-        front_mat = conv2(double(mask2d),front_finder,'same');
+        front_mat = conv2(double(mask),front_finder,'same');
         obj.cameras(n).front = find(front_mat<0); % 计算得到第n个图片的边框线条
     end
 end

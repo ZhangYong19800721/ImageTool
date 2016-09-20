@@ -6,5 +6,6 @@ function obj = estimate(obj, images, row_num, col_num, warper)
     obj = obj.wave_correct(); % 波浪形修正
     obj = obj.interp_pos(images); % 根据相机参数K,R，计算每个图片对应的蒙板和插值查询点坐标
     obj = obj.gain_compensation(images); % 计算增益补偿权值
+    obj = obj.blend_estimate(); % 估计图像融合需要的参数
 end
 

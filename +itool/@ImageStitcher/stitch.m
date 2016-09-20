@@ -8,7 +8,6 @@ function canvas = stitch(obj, images, options)
     Y = zeros(obj.canvas_row_num,obj.canvas_col_num);
     U = zeros(obj.canvas_row_num,obj.canvas_col_num);
     V = zeros(obj.canvas_row_num,obj.canvas_col_num);
-    M = logical(zeros(size(Y)));
     
     for n = obj.sequence
         image = double(images(n).image);
@@ -21,25 +20,24 @@ function canvas = stitch(obj, images, options)
         
         [image_row_num, image_col_num, ~] = size(image);
         [IX, IY] = meshgrid(1:image_row_num,1:image_col_num);
-        mask2d = reshape(logical(obj.cameras(n).mask),obj.canvas_row_num,obj.canvas_col_num);
+        mask_n = obj.cameras(n).mask;
         
         if options.is_blending    
-            temp_Y = zeros(obj.canvas_row_num,obj.canvas_col_num); 
-            temp_U = zeros(obj.canvas_row_num,obj.canvas_col_num);
-            temp_V = zeros(obj.canvas_row_num,obj.canvas_col_num);
+            Y_n = zeros(obj.canvas_row_num,obj.canvas_col_num); 
+            U_n = zeros(obj.canvas_row_num,obj.canvas_col_num);
+            V_n = zeros(obj.canvas_row_num,obj.canvas_col_num);
             
-            temp_Y(mask2d) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
-            temp_U(mask2d) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
-            temp_V(mask2d) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            Y_n(mask_n) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            U_n(mask_n) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            V_n(mask_n) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
             
-            Y = obj.blend(Y,M,temp_Y,mask2d,9);
-            U = obj.blend(U,M,temp_U,mask2d,9);
-            V = obj.blend(V,M,temp_V,mask2d,9);
-            M(mask2d) = 1;
+            Y = obj.blend(Y,Y_n,n,9);
+            U = obj.blend(U,U_n,n,9);
+            V = obj.blend(V,V_n,n,9);
         else
-            Y(mask2d) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
-            U(mask2d) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
-            V(mask2d) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            Y(mask_n) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            U(mask_n) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
+            V(mask_n) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
         end
         
         % imwrite(uint8(cat(3,Y,U,V)),strcat(strcat('figure',num2str(n)),'.bmp'));

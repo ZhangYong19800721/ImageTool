@@ -21,7 +21,8 @@ classdef ImageStitcher
         obj = wave_correct(obj) % 波浪修正算法
         obj = interp_pos(obj,images) % 计算差值查询点
         obj = create_canvas(obj,row_num,col_num,warper) % 创建画布
-        image = blend(obj,image1,mask1,image2,mask2,level) % 对图像进行融合
+        obj = blend_estimate(obj) % 估计图像融合需要的参数
+        image = blend(obj,image1,image2,camera_idx,level) % 对图像进行融合
     end
     
     methods(Static)
