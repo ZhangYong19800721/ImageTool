@@ -42,7 +42,7 @@ function canvas = stitch(obj, images, options)
             V(mask2d) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
         end
         
-        imwrite(uint8(cat(3,Y,U,V)),strcat(strcat('figure',num2str(n)),'.bmp'));
+        % imwrite(uint8(cat(3,Y,U,V)),strcat(strcat('figure',num2str(n)),'.bmp'));
     end
     
     if options.is_show_skeleton

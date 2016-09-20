@@ -56,33 +56,75 @@ function image = blend(obj,image1,mask1,image2,mask2,level)
             image(overlap_mask_part1) = blend_image(clip_mask_part1);
             image(overlap_mask_part2) = blend_image(clip_mask_part2);
         else % 重叠区不跨界的情况
-            clip_mask = overlap_mask(unique_row_idx,unique_col_idx); % 重叠部分的剪切块的蒙板    
-            image_1 = zeros(size(clip_mask)); % 重叠部分的图像1（规则边界），初始化为全0
-            image_2 = zeros(size(clip_mask)); % 重叠部分的图像2（规则边界），初始化为全0
-            image_1(clip_mask) = image1(overlap_mask); % 重叠部分的图像1（规则边界）
-            image_2(clip_mask) = image2(overlap_mask); % 重叠部分的图像2（规则边界）
-            
-            % 计算融合边界
-            region = zeros(size(clip_mask));
-            unmask1 = ~mask1; unmask2 = ~mask2; % 取mask1和mask2的非
-            front1 = unmask2(unique_row_idx,unique_col_idx); % 得到原来单独归属于image1的部分
-            front2 = unmask1(unique_row_idx,unique_col_idx); % 得到原来单独归属于image2的部分
-            region(front1) = -1; % 将原来单独归属于image1的部分标记为-1
-            region(front2) = +1; % 将原来单独归属于image2的部分标记为+1
-            
-            % 对region进行低通滤波
-            kernel = fspecial('gaussian',size(clip_mask),length(unique_col_idx));
-            region = conv2(region,kernel,'same');
-            region = (region>0); % 以0为界将region变为二值图
-            
-            % 图像融合
-            blend_image = itool.MultiBandBlending.test_blend(image_1,image_2,region,level);
-            
-            mask1_mask2 = mask1; mask1_mask2(mask2) = 0;
-            mask2_mask1 = mask2; mask2_mask1(mask1) = 0;
-            image(mask1_mask2) = image1(mask1_mask2);
-            image(mask2_mask1) = image2(mask2_mask1);
-            image(overlap_mask) = blend_image(clip_mask);
+            cut = cat(1,unique_col_idx,unique_col_idx(end)+1) - cat(1,unique_col_idx(1)-1,unique_col_idx);
+            cut_idx = find(cut > 1); % 分段点的列下标
+            seg_num = 1 + length(cut_idx); % 总段数
+            if seg_num == 1
+                clip_mask = overlap_mask(unique_row_idx,unique_col_idx); % 重叠部分的剪切块的蒙板    
+                image_1 = zeros(size(clip_mask)); % 重叠部分的图像1（规则边界），初始化为全0
+                image_2 = zeros(size(clip_mask)); % 重叠部分的图像2（规则边界），初始化为全0
+                image_1(clip_mask) = image1(overlap_mask); % 重叠部分的图像1（规则边界）
+                image_2(clip_mask) = image2(overlap_mask); % 重叠部分的图像2（规则边界）
+                
+                % 计算融合边界
+                region = zeros(size(clip_mask));
+                unmask1 = ~mask1; unmask2 = ~mask2; % 取mask1和mask2的非
+                front1 = unmask2(unique_row_idx,unique_col_idx); % 得到原来单独归属于image1的部分
+                front2 = unmask1(unique_row_idx,unique_col_idx); % 得到原来单独归属于image2的部分
+                region(front1) = -1; % 将原来单独归属于image1的部分标记为-1
+                region(front2) = +1; % 将原来单独归属于image2的部分标记为+1
+                
+                % 对region进行低通滤波
+                kernel = fspecial('gaussian',size(clip_mask),length(unique_col_idx));
+                region = conv2(region,kernel,'same');
+                region = (region>0); % 以0为界将region变为二值图
+                
+                % 图像融合
+                blend_image = itool.MultiBandBlending.test_blend(image_1,image_2,region,level);
+                
+                mask1_mask2 = mask1; mask1_mask2(mask2) = 0;
+                mask2_mask1 = mask2; mask2_mask1(mask1) = 0;
+                image(mask1_mask2) = image1(mask1_mask2);
+                image(mask2_mask1) = image2(mask2_mask1);
+                image(overlap_mask) = blend_image(clip_mask);
+            else
+                cut_idx = cat(1,1,cut_idx,length(unique_col_idx)+1);
+                for s = 1:seg_num
+                    unique_col_idx_seg = unique_col_idx(cut_idx(s):(cut_idx(s+1)-1));
+                    [row_idx_seg,~] = find(overlap_mask(:,unique_col_idx_seg)>0);
+                    unique_row_idx_seg = unique(row_idx_seg);
+                    clip_mask_seg = overlap_mask(unique_row_idx_seg,unique_col_idx_seg); % 重叠部分的剪切块的蒙板
+                    image_1 = zeros(size(clip_mask_seg)); % 重叠部分的图像1（规则边界），初始化为全0
+                    image_2 = zeros(size(clip_mask_seg)); % 重叠部分的图像2（规则边界），初始化为全0
+                    overlap_mask_seg = logical(zeros(size(overlap_mask))); overlap_mask_seg(unique_row_idx_seg,unique_col_idx_seg) = clip_mask_seg;
+                    image_1(clip_mask_seg) = image1(overlap_mask_seg);
+                    image_2(clip_mask_seg) = image2(overlap_mask_seg);
+                    % 计算融合边界
+                    region = zeros(size(clip_mask_seg));
+                    mask1_seg = mask1(unique_row_idx_seg,unique_col_idx_seg);
+                    mask2_seg = mask2(unique_row_idx_seg,unique_col_idx_seg);
+                    unmask1_seg = ~mask1_seg; unmask2_seg = ~mask2_seg; % 取mask1和mask2的非
+                    front1 = unmask2_seg; % 得到原来单独归属于image1的部分
+                    front2 = unmask1_seg; % 得到原来单独归属于image2的部分
+                    region(front1) = -1; % 将原来单独归属于image1的部分标记为-1
+                    region(front2) = +1; % 将原来单独归属于image2的部分标记为+1
+                    
+                    % 对region进行低通滤波
+                    kernel = fspecial('gaussian',size(clip_mask_seg),length(unique_col_idx_seg));
+                    region = conv2(region,kernel,'same');
+                    region = (region>0); % 以0为界将region变为二值图
+                    
+                    % 图像融合
+                    blend_image = itool.MultiBandBlending.test_blend(image_1,image_2,region,level);
+                    
+                    image(overlap_mask_seg) = blend_image(clip_mask_seg); % 将融合后的图像拷贝到相应的位置
+                end
+                
+                mask1_mask2 = mask1; mask1_mask2(mask2) = 0;
+                mask2_mask1 = mask2; mask2_mask1(mask1) = 0;
+                image(mask1_mask2) = image1(mask1_mask2);
+                image(mask2_mask1) = image2(mask2_mask1);
+            end
         end
     end
 end
