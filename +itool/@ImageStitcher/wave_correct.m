@@ -12,10 +12,14 @@ function obj = wave_correct(obj)
     [U, S, V] = svd(A);
     h = V(:,end);
     
-    t1 = 0;
-    t2 = -atan(h(3)/sqrt(h(1).^2 + h(2).^2)); % TODO 检查什么情况下应该取负号
+    t1 = -obj.cameras(1).P(1); % 选择第n幅图像作为正面
+    t2 = atan(h(3)/sqrt(h(1).^2 + h(2).^2));
     t3 = atan(h(2)/h(1));
-   
-    obj.correct = expm([0 -t3 t2; t3 0 -t1; -t2 t1 0]);
+    
+    R1 = expm([0 0 0; 0 0 -t1; 0 t1 0]); 
+    R2 = expm([0 0 t2; 0 0 0; -t2 0 0]); 
+    R3 = expm([0 -t3 0; t3 0 0; 0 0 0]);
+
+    obj.correct = R3 * R2 * R1;
 end
 

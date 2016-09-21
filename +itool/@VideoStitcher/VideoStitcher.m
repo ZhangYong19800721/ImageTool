@@ -19,6 +19,7 @@ classdef VideoStitcher
     methods(Static)
         H = estimate_homography(image1, image2) % 使用SURF特征估计两幅图之间的透视变换矩阵
         H = DLT(match_points1, match_points2) % 使用DLT算法估计两组匹配点之间的透视变换矩阵
+        exit = unit_test();
     end
 end
 
