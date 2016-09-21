@@ -11,7 +11,7 @@ function obj = bundle_adjust(obj,images) %
     bundle_group = 1;
 
     for n = 1:number_of_images % 抽取SURF特征，记录特征点坐标和描述向量
-        yuv_image = rgb2ycbcr(images(n).image);
+        yuv_image = images(n).image;
         surf_points = detectSURFFeatures(yuv_image(:,:,1));
         [features, points] = extractFeatures(yuv_image(:,:,1), surf_points);
         [image_row,image_col,~] = size(yuv_image);

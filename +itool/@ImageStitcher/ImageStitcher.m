@@ -14,7 +14,7 @@ classdef ImageStitcher
     end
     
     methods
-        canvas = stitch(obj, images, isline) % 输入N个image，输出拼接结果
+        canvas = stitch(obj, images, options) % 输入N个image，输出拼接结果
         obj = estimate(obj, images, row_num, col_num, alfa, warper) % 输入N个image，估计拼接参数
         obj = bundle_adjust(obj,images,radius) % 对输入的N个image，作群体微调
         obj = gain_compensation(obj,images) % 亮度增益补偿算法

@@ -1,50 +1,37 @@
-function yuv = stitch(obj, yuvs, count)
-% stitch : 对多路YUV视频进行拼接
-% yuvs : 输入的N个YUV文件描述
-% count ：拼接的帧数
+function output_yuv = stitch(obj, input_yuv_list, count)
+% stitch :         对多路YUV视频进行拼接
+% input_yuv_list : 输入的N个YUV文件描述
+% output_yuv ：    输出的YUV文件描述
+    output_yuv = itool.YUV();
+    output_yuv.filename = 'result.yuv';
+    output_yuv.row_num = 1080;
+    output_yuv.col_num = 1920;
+    output_yuv.frame_num = 2500;
+    output_yuv.format = 'yuv444p';
+    output_yuv = output_yuv.open('w');
 
-    N = length(yuvs); % 共有N路视频
+    number_of_video = length(input_yuv_list); % 共有N路视频
 
-    for n = 1:N
-        yuvs(n).fid = fopen(yuvs(n).filename,'r');
+    for n = 1:number_of_video
+        input_yuv_list{n} = input_yuv_list{n}.open('r');
     end
     
-    yuv  = itool.YUV();
-    yuv.filename = 'result.yuv';
-    yuv.row_num = obj.canvas_row_num;
-    yuv.col_num = obj.canvas_col_num;
-    yuv.frame_num = count;
-    yuv.format = 'yuv444p';
-    yuv.fid = fopen(yuv.filename,'w');
+    options.is_blending = true;
+    options.is_show_skeleton = false;
+    options.is_gain_compensation = true;
     
-    Y = zeros(obj.canvas_row_num,obj.canvas_col_num);
-    U = zeros(obj.canvas_row_num,obj.canvas_col_num);
-    V = zeros(obj.canvas_row_num,obj.canvas_col_num);
-   
-    for frame = 1:count % 逐帧拼接
-        frame
-        for n = N:-1:1
-            image = itool.read_frame(yuvs(n));
-            [image_row_num, image_col_num, ~] = size(image);
-            [x_g_i, y_g_i] = meshgrid(1:image_row_num,1:image_col_num);
-            image_mask = logical(obj.mask(:,:,n));
-            Y(image_mask) = interp2(x_g_i,y_g_i,double(image(:,:,1))',obj.interp_pos(n).x,obj.interp_pos(n).y);
-            U(image_mask) = interp2(x_g_i,y_g_i,double(image(:,:,2))',obj.interp_pos(n).x,obj.interp_pos(n).y);
-            V(image_mask) = interp2(x_g_i,y_g_i,double(image(:,:,3))',obj.interp_pos(n).x,obj.interp_pos(n).y);
+    for f = 1:count
+        for n = 1:number_of_video
+            images(n).image = input_yuv_list{n}.read_frame();
         end
-       
-        warning off;
-        YR = imresize(Y,[1080 1920]);
-        UR = imresize(U,[1080 1920]);
-        VR = imresize(V,[1080 1920]);
-        imshow(ycbcr2rgb(uint8(cat(3,YR,UR,VR))));
-        fwrite(yuv.fid,uint8(YR'));
-        fwrite(yuv.fid,uint8(UR'));
-        fwrite(yuv.fid,uint8(VR'));
+        frame = obj.image_stitcher.stitch(images,options);
+        fwrite(output_yuv.fid,frame(:,:,1));
+        fwrite(output_yuv.fid,frame(:,:,2));
+        fwrite(output_yuv.fid,frame(:,:,3));
     end
     
-    for n = 1:N
-        fclose(yuvs(n).fid);
+    for n = 1:number_of_video
+        input_yuv_list{n}.close();
     end
-    fclose(yuv.fid);
+    output_yuv.close();
 end
