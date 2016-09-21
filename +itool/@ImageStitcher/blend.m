@@ -1,4 +1,4 @@
-function image = blend(obj,image1,image2,image2_idx,level) 
+function image = blend(obj,image1,image2,image2_idx) 
 %BLEND 图像融合
 %   此处显示详细说明
     image = zeros(obj.canvas_row_num,obj.canvas_col_num);
@@ -18,6 +18,7 @@ function image = blend(obj,image1,image2,image2_idx,level)
             image_2(clip_mask) = image2(overlap_mask);
             
             region = obj.cameras(image2_idx).blend.region{z}; % 第z个融合区的融合边界
+            level = floor(log2(length(region))) - 1;
             blend_image = itool.MultiBandBlending.test_blend(image_1,image_2,region,level);
             
             image(overlap_mask) = blend_image(clip_mask); % 将融合后的图拷贝回去

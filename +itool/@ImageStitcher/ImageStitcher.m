@@ -15,14 +15,14 @@ classdef ImageStitcher
     
     methods
         canvas = stitch(obj, images, isline) % 输入N个image，输出拼接结果
-        obj = estimate(obj, images, row_num, col_num, warper) % 输入N个image，估计拼接参数
+        obj = estimate(obj, images, row_num, col_num, alfa, warper) % 输入N个image，估计拼接参数
         obj = bundle_adjust(obj,images,radius) % 对输入的N个image，作群体微调
         obj = gain_compensation(obj,images) % 亮度增益补偿算法
         obj = wave_correct(obj) % 波浪修正算法
         obj = interp_pos(obj,images) % 计算差值查询点
-        obj = create_canvas(obj,row_num,col_num,warper) % 创建画布
+        obj = create_canvas(obj,row_num,col_num,alfa,warper) % 创建画布
         obj = blend_estimate(obj) % 估计图像融合需要的参数
-        image = blend(obj,image1,image2,camera_idx,level) % 对图像进行融合
+        image = blend(obj,image1,image2,camera_idx) % 对图像进行融合
     end
     
     methods(Static)

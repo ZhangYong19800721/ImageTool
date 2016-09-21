@@ -1,9 +1,9 @@
-function obj = create_canvas(obj,row_num,col_num,warper)
+function obj = create_canvas(obj,row_num,col_num,alfa,warper)
 %CREATE_CANVAS 创建画布
 %   此处显示详细说明
     obj.canvas_row_num = row_num; % 画布行数
     obj.canvas_col_num = col_num; % 画布列数
-    obj.alfa = 360; % 水平全景视角，度
+    obj.alfa = alfa; % 水平全景视角，度
     radius_warp = (obj.canvas_col_num+1) / (obj.alfa * pi / 180); % 计算圆柱/球的半径
     midx = (obj.canvas_row_num-1)/2 + 1; midy = (obj.canvas_col_num-1)/2 + 1; % 计算X坐标的中值点和Y坐标的中值点
     [Y_warp,X_warp] = meshgrid(1:obj.canvas_col_num,1:obj.canvas_row_num); % 获取坐标网格（圆柱/球坐标系）

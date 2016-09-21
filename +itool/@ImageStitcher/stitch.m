@@ -31,9 +31,9 @@ function canvas = stitch(obj, images, options)
             U_n(mask_n) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
             V_n(mask_n) = interp2(IX,IY,double(image(:,:,3))',obj.cameras(n).query_x,obj.cameras(n).query_y);
             
-            Y = obj.blend(Y,Y_n,n,9);
-            U = obj.blend(U,U_n,n,9);
-            V = obj.blend(V,V_n,n,9);
+            Y = obj.blend(Y,Y_n,n);
+            U = obj.blend(U,U_n,n);
+            V = obj.blend(V,V_n,n);
         else
             Y(mask_n) = interp2(IX,IY,double(image(:,:,1))',obj.cameras(n).query_x,obj.cameras(n).query_y);
             U(mask_n) = interp2(IX,IY,double(image(:,:,2))',obj.cameras(n).query_x,obj.cameras(n).query_y);
