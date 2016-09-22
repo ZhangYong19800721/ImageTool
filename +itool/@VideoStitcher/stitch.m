@@ -25,9 +25,9 @@ function output_yuv = stitch(obj, input_yuv_list, count)
             images(n).image = input_yuv_list{n}.read_frame();
         end
         frame = obj.image_stitcher.stitch(images,options);
-        fwrite(output_yuv.fid,frame(:,:,1));
-        fwrite(output_yuv.fid,frame(:,:,2));
-        fwrite(output_yuv.fid,frame(:,:,3));
+        fwrite(output_yuv.fid,frame(:,:,1)');
+        fwrite(output_yuv.fid,frame(:,:,2)');
+        fwrite(output_yuv.fid,frame(:,:,3)');
     end
     
     for n = 1:number_of_video

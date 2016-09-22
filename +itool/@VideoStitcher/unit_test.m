@@ -1,6 +1,9 @@
 function exit = unit_test()
 %UNIT_TEST 单元测试函数
 %   此处显示详细说明
+    close all;
+    rng('default');
+    
     input_yuv_list{1} = itool.YUV();
     input_yuv_list{1}.filename = 'E:\WorkSpace\itool\+itool\@VideoStitcher\unit_test\Clip_M_2500F.yuv';
     input_yuv_list{1}.row_num = 1080;
