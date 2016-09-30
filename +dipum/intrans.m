@@ -58,7 +58,7 @@ end
 if isfloat(f) && (max(f(:)) > 1 || min(f(:)) < 0)
    f = mat2gray(f);
 end
-[f, revertclass] = tofloat(f); %Store class of f for use later.
+[f, revertclass] = dipum.tofloat(f); %Store class of f for use later.
 
 % Perform the intensity transformation specified.    
 switch method
@@ -112,7 +112,7 @@ g = interp1(X, T, f);
 
 %------------------------------------------------------------------%
 function g = logTransform(f, varargin)
-[f, revertclass] = tofloat(f);
+[f, revertclass] = dipum.tofloat(f);
 if numel(varargin) >= 2
    if strcmp(varargin{2}, 'uint8')
       revertclass = @im2uint8;
