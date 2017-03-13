@@ -15,6 +15,7 @@ classdef YUV
         frame = read_frame(obj)    % 读取一帧
         exit = play(obj,frame_num) % 播放frame_num帧
         yuv = clip(obj,frame_start,frame_end,filename) % 剪切
+        yuv = resize(obj,frame_start,frame_end,filename,row_num,col_num) % 扩大或缩小每一帧的分辨率
         obj = open(obj,option)
         obj = close(obj)
     end
